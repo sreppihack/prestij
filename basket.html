@@ -1,0 +1,671 @@
+{% if mysettings.0.maintenance_mode %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:'Playfair Display',serif">
+<div style="text-align:center;color:#1a1a1a;border:1px solid #e0d5c5;padding:48px 64px;background:white;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+<h1 style="font-size:48px;letter-spacing:6px;margin-bottom:12px;font-weight:500">{{ mysettings.0.site_name|default:"TICA FET" }}</h1>
+<p style="font-size:16px;letter-spacing:4px;color:#c9a96e;padding:8px 20px;display:inline-block;font-family:'Inter',sans-serif;font-weight:400;text-transform:uppercase">Bakım Modunda — Yakında Geri Döneceğiz</p>
+</div>
+</div>
+{% else %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sepetim — {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET{% endif %}</title>
+{% if mysettings.0.favicon %}<link href="{{ mysettings.0.favicon.url }}" rel="icon" type="image/x-icon"/>{% endif %}
+{% if mysettings.0.robots_txt %}<meta content="{{ mysettings.0.robots_txt }}" name="robots"/>{% endif %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+
+{% if mysettings.0.html_head %}{{ mysettings.0.html_head|safe }}{% endif %}
+
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: 'Inter', sans-serif; background: #FAFAF8; color: #1a1a1a; overflow-x: hidden; }
+
+.btn-elegant {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.btn-elegant:hover { opacity: 0.88; }
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-inner { animation: ticker 22s linear infinite; display: flex; width: max-content; }
+
+#searchOverlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 100px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#searchOverlay.open { opacity: 1; pointer-events: all; }
+#searchBox {
+  background: white;
+  border: 1px solid #e0d5c5;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  width: min(600px, 90vw);
+  padding: 36px;
+  border-radius: 2px;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+#searchOverlay.open #searchBox { transform: translateY(0); }
+#searchInput {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #1a1a1a;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  padding: 12px 0;
+  outline: none;
+  transition: border-color 0.3s;
+}
+#searchInput:focus { border-color: #c9a96e; }
+
+#sidebarOverlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+#sidebarOverlay.open { opacity: 1; pointer-events: all; }
+#sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 400;
+  width: min(340px, 85vw);
+  background: #FAFAF8;
+  border-left: 1px solid #e0d5c5;
+  transform: translateX(110%);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  display: flex; flex-direction: column; overflow-y: auto;
+}
+#sidebar.open { transform: translateX(0); }
+
+.sb-sub-list {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: white;
+  border-top: 1px solid #e8e4de;
+}
+.sb-sub-list.open { max-height: 400px; }
+
+.toast-pop {
+  position: fixed; top: 80px; right: 20px; z-index: 9999;
+  padding: 14px 28px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.toast-pop.show { transform: translateX(0); }
+
+.qty-btn {
+  width: 32px; height: 32px;
+  border: 1px solid #d0c9bf;
+  background: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  color: #1a1a1a;
+  border-radius: 0;
+}
+.qty-btn:hover { border-color: #c9a96e; color: #c9a96e; }
+
+.basket-item {
+  border: 1px solid #e8e4de;
+  background: white;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  transition: box-shadow 0.3s ease;
+}
+.basket-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.badge-pulse { animation: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+{% if mysettings.0.custom_css %}{{ mysettings.0.custom_css|safe }}{% endif %}
+</style>
+</head>
+<body>
+
+<!-- SEARCH OVERLAY -->
+<div id="searchOverlay">
+  <div id="searchBox">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <span style="font-family:'Playfair Display',serif;font-size:22px;color:#1a1a1a;font-weight:500">Ara</span>
+      <button id="searchClose" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:22px;line-height:1;color:#1a1a1a;font-weight:300">&times;</button>
+    </div>
+    <form action="/search" method="get">
+      <input id="searchInput" name="q" placeholder="Ne arıyorsunuz..." type="text" autocomplete="off"/>
+    </form>
+    <p style="font-family:'Inter',sans-serif;font-size:12px;color:#999;margin-top:14px;font-weight:400;letter-spacing:0.5px">Popüler: Tişört &middot; Sweatshirt &middot; Şort &middot; Gömlek</p>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay"></div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="sidebar">
+  <div style="padding:24px;border-bottom:1px solid #e0d5c5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <a href="/" style="font-family:'Playfair Display',serif;font-size:22px;letter-spacing:3px;color:#1a1a1a;text-decoration:none;font-weight:500">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:36px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        TICA FET
+      {% endif %}
+    </a>
+    <button id="sidebarClose" style="background:none;border:none;cursor:pointer;color:#1a1a1a;width:34px;height:34px;font-size:22px;display:flex;align-items:center;justify-content:center;font-weight:300">&times;</button>
+  </div>
+
+  <div style="display:flex;border-bottom:1px solid #e0d5c5;flex-shrink:0">
+    <button id="sidebarSearchBtn" style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #e0d5c5;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:400;text-transform:uppercase">
+      <i class="fas fa-search" style="font-size:13px"></i> Ara
+    </button>
+    <button style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #e0d5c5;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:400;text-transform:uppercase">
+      <i class="fas fa-user" style="font-size:13px"></i> Hesap
+    </button>
+    <a href="/basket/" style="flex:1;padding:16px 8px;text-decoration:none;color:#c9a96e;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-weight:500;text-transform:uppercase">
+      <span style="position:relative;display:inline-block">
+        <i class="fas fa-shopping-bag" style="font-size:13px"></i>
+        <span class="badge-pulse" style="position:absolute;top:-6px;right:-8px;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </span>
+      Sepet
+    </a>
+  </div>
+
+  <nav style="flex:1;padding:24px">
+    <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:#999;margin-bottom:16px;text-transform:uppercase;font-weight:500">Kategoriler</p>
+    <ul style="list-style:none">
+      <li>
+        <a href="/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #e8e4de;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none">
+          Anasayfa <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+        </a>
+      </li>
+      {% for cat in categories %}
+      <li>
+        {% if cat.sub_categories.all %}
+          <button class="sb-cat-btn" onclick="toggleSbCat(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border:none;border-bottom:1px solid #e8e4de;background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-align:left">
+            <span>{{ cat.name }}</span>
+            <i class="fas fa-chevron-right" style="font-size:10px;color:#c9a96e;transition:transform 0.25s"></i>
+          </button>
+          <div class="sb-sub-list">
+            <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:12px 16px;font-size:12px;font-weight:600;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #f0ece6;letter-spacing:0.5px">Tümünü Gör</a>
+            {% for sub in cat.sub_categories.all %}
+            <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:12px 16px;font-size:12px;font-weight:400;color:#666;text-decoration:none;border-bottom:1px solid #f0ece6">{{ sub.name }}</a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #e8e4de;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none">
+            {{ cat.name }} <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+          </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <div style="padding:16px 24px;border-top:1px solid #e0d5c5;flex-shrink:0">
+    <p style="font-size:11px;font-weight:400;color:#999;letter-spacing:0.3px">1500₺ üzeri ücretsiz kargo &middot; 14 gün iade garantisi</p>
+  </div>
+</div>
+
+<!-- TICKER / TOP BAR -->
+<div style="overflow:hidden;background:#1a1a1a;padding:10px 0">
+  <div class="ticker-inner" style="white-space:nowrap;gap:0">
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.7);padding:0 40px;font-weight:400;text-transform:uppercase">
+      1500₺ Üzeri Ücretsiz Kargo
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Kapıda Ödeme Ücretsiz
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Yeni Koleksiyon
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.7);padding:0 40px;font-weight:400;text-transform:uppercase">
+      1500₺ Üzeri Ücretsiz Kargo
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Kapıda Ödeme Ücretsiz
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Yeni Koleksiyon
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav style="position:sticky;top:0;z-index:100;background:rgba(250,250,248,0.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,0.06)">
+  <div style="max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:stretch;height:68px;gap:16px">
+
+    <!-- LOGO -->
+    <a href="/" style="display:flex;align-items:center;text-decoration:none;padding-right:24px;flex-shrink:0">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:40px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        <span style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;color:#1a1a1a;line-height:1;font-weight:500">
+          TICA FET
+        </span>
+      {% endif %}
+    </a>
+
+    <!-- DESKTOP CATEGORIES -->
+    <ul style="display:none;list-style:none;align-items:stretch;gap:0;flex:1" class="lg-flex" id="desktopNav">
+      <li style="display:flex;align-items:center">
+        <a href="/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:1.5px;color:#1a1a1a;text-decoration:none;transition:color 0.3s;font-weight:500;text-transform:uppercase" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">Anasayfa</a>
+      </li>
+      {% for cat in categories %}
+      <li style="position:relative;display:flex;align-items:center" class="cat-item">
+        <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:1.5px;color:#1a1a1a;text-decoration:none;gap:6px;transition:color 0.3s;font-weight:500;text-transform:uppercase" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+          {{ cat.name }}
+          {% if cat.sub_categories.all %}<i class="fas fa-chevron-down" style="font-size:8px;color:#c9a96e"></i>{% endif %}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- RIGHT ACTIONS -->
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <form action="/search" method="get" style="display:none" class="lg-flex-item" id="desktopSearchForm">
+        <input name="q" placeholder="Ürün ara..." type="text" style="border:none;border-bottom:1px solid #d0c9bf;background:transparent;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;padding:8px 36px 8px 0;width:180px;outline:none;transition:border-color 0.3s" onfocus="this.style.borderColor='#c9a96e'" onblur="this.style.borderColor='#d0c9bf'"/>
+        <button type="submit" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999"><i class="fas fa-search" style="font-size:13px"></i></button>
+      </form>
+      <button id="searchOpenBtn" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:none;cursor:pointer" class="lg-hidden">
+        <i class="fas fa-search" style="font-size:15px;color:#1a1a1a"></i>
+      </button>
+      <a href="/basket/" style="position:relative;display:flex;align-items:center;justify-content:center;width:38px;height:38px;text-decoration:none;transition:all 0.3s" onmouseover="this.style.opacity='0.6'" onmouseout="this.style.opacity='1'">
+        <i class="fas fa-shopping-bag" style="font-size:15px;color:#1a1a1a"></i>
+        <span class="badge-pulse" style="position:absolute;top:0;right:0;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </a>
+      <button id="hamburger" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:38px;height:38px;background:none;border:none;cursor:pointer" class="lg-hidden">
+        <span style="display:block;width:18px;height:1.5px;background:#1a1a1a"></span>
+        <span style="display:block;width:13px;height:1.5px;background:#1a1a1a;align-self:flex-end"></span>
+        <span style="display:block;width:18px;height:1.5px;background:#1a1a1a"></span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="border-bottom:1px solid #e8e4de">
+  <div style="max-width:1400px;margin:0 auto;padding:12px 24px">
+    <div style="display:flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:0.5px;color:#999;font-weight:400">
+      <a href="/" style="color:#999;text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#999'">Anasayfa</a>
+      <span style="color:#d0c9bf">/</span>
+      <span style="color:#1a1a1a">Sepetim</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE HEADER -->
+<section style="background:#FAFAF8;position:relative;padding:clamp(40px,5vw,64px) 24px;border-bottom:1px solid #e8e4de">
+  <div style="max-width:1400px;margin:0 auto;text-align:center;position:relative;z-index:1">
+    <p style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#c9a96e;margin-bottom:12px;text-transform:uppercase;font-weight:500">Alışveriş</p>
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,52px);letter-spacing:2px;color:#1a1a1a;line-height:1.1;font-weight:500">Sepetim</h1>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main style="padding:clamp(28px,5vw,56px) 16px;background:#FAFAF8">
+  <div style="max-width:1400px;margin:0 auto">
+    <div id="main-grid" style="display:grid;grid-template-columns:1fr;gap:32px">
+
+      <!-- BASKET ITEMS -->
+      <div id="basket-items-col">
+        <div id="basket-container">
+          <!-- Loading spinner -->
+          <div style="border:1px solid #e8e4de;background:white;padding:60px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+            <div style="width:36px;height:36px;border:2px solid #e8e4de;border-top:2px solid #c9a96e;border-radius:50%;animation:spin .8s linear infinite"></div>
+            <p style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:2px;color:#999;font-weight:400;text-transform:uppercase">Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div id="order-summary-col">
+        <div style="border:1px solid #e8e4de;background:white;overflow:hidden">
+          <!-- Summary header -->
+          <div style="padding:20px 24px;border-bottom:1px solid #e8e4de">
+            <h2 style="font-family:'Playfair Display',serif;font-size:20px;letter-spacing:1px;color:#1a1a1a;font-weight:500">Sipariş Özeti</h2>
+          </div>
+
+          <div style="padding:24px">
+            <!-- Summary rows -->
+            <div style="display:flex;flex-direction:column;gap:0;margin-bottom:24px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f0ece6">
+                <span style="font-size:13px;font-weight:400;color:#888">Toplam Ürün</span>
+                <span id="total-items" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#1a1a1a">0</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f0ece6">
+                <span style="font-size:13px;font-weight:400;color:#888">Ara Toplam</span>
+                <span id="subtotal-price" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#1a1a1a">0 ₺</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #f0ece6">
+                <span style="font-size:13px;font-weight:400;color:#888">Kargo</span>
+                <span id="shipping-info" style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a">—</span>
+              </div>
+              <!-- TOTAL -->
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0 0">
+                <span style="font-family:'Playfair Display',serif;font-size:16px;color:#1a1a1a;font-weight:500">Toplam</span>
+                <span id="total-price" style="font-family:'Playfair Display',serif;font-size:24px;color:#1a1a1a;font-weight:600">0 ₺</span>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <a href="/checkout/" class="btn-elegant" style="background:#1a1a1a;color:white;font-size:12px;padding:16px;text-decoration:none;width:100%;text-align:center;border:none">
+                <i class="fas fa-lock" style="font-size:11px"></i> Siparişi Tamamla
+              </a>
+              <button onclick="clearBasket()" class="btn-elegant" style="background:transparent;color:#1a1a1a;font-size:12px;padding:14px;width:100%;border:1px solid #d0c9bf">
+                <i class="fas fa-trash-alt" style="font-size:11px"></i> Sepeti Temizle
+              </button>
+              <a href="/" class="btn-elegant" style="background:transparent;color:#1a1a1a;font-size:12px;padding:14px;text-decoration:none;width:100%;text-align:center;border:1px solid #d0c9bf">
+                <i class="fas fa-arrow-left" style="font-size:11px"></i> Alışverişe Devam
+              </a>
+            </div>
+
+            <!-- Trust badges -->
+            <div style="margin-top:24px;padding-top:24px;border-top:1px solid #f0ece6">
+              <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                <i class="fas fa-shield-alt" style="font-size:14px;color:#c9a96e"></i>
+                <span style="font-size:12px;font-weight:400;color:#888">256-bit SSL güvenli ödeme</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                <i class="fas fa-undo" style="font-size:14px;color:#c9a96e"></i>
+                <span style="font-size:12px;font-weight:400;color:#888">14 gün iade garantisi</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                <i class="fas fa-truck" style="font-size:14px;color:#c9a96e"></i>
+                <span style="font-size:12px;font-weight:400;color:#888">1500₺ üzeri ücretsiz kargo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer style="background:#1a1a1a;padding:clamp(48px,6vw,72px) 24px 28px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:48px;margin-bottom:48px">
+
+      <!-- Brand -->
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:28px;letter-spacing:4px;color:white;margin-bottom:8px;font-weight:500">
+          {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET{% endif %}
+        </div>
+        <div style="margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;font-weight:400">MODA &amp; STİL</span>
+        </div>
+        {% if mysettings.0.contact_email %}<a href="mailto:{{ mysettings.0.contact_email }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'"><i class="fas fa-envelope" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_email }}</a>{% endif %}
+        {% if mysettings.0.contact_phone %}<a href="tel:{{ mysettings.0.contact_phone }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'"><i class="fas fa-phone" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_phone }}</a>{% endif %}
+        {% if mysettings.0.contact_address %}<p style="display:flex;align-items:flex-start;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);margin-bottom:10px"><i class="fas fa-map-marker-alt" style="color:#c9a96e;margin-top:2px;flex-shrink:0;font-size:11px"></i> {{ mysettings.0.contact_address }}</p>{% endif %}
+        <div style="display:flex;gap:12px;margin-top:24px">
+          {% if mysettings.0.instagram_url %}<a href="{{ mysettings.0.instagram_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'"><i class="fab fa-instagram" style="font-size:14px"></i></a>{% endif %}
+          {% if mysettings.0.facebook_url %}<a href="{{ mysettings.0.facebook_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'"><i class="fab fa-facebook-f" style="font-size:14px"></i></a>{% endif %}
+          {% if mysettings.0.twitter_url %}<a href="{{ mysettings.0.twitter_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'"><i class="fab fa-twitter" style="font-size:14px"></i></a>{% endif %}
+        </div>
+      </div>
+
+      <!-- Shopping -->
+      <div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:16px;letter-spacing:1px;color:white;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:500">Alışveriş</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if categories %}{% for category in categories %}<li><a href="/products/category/{{ category.slug }}" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ category.name }}</a></li>{% endfor %}{% endif %}
+        </ul>
+      </div>
+
+      <!-- Corporate -->
+      <div>
+        <h4 style="font-family:'Playfair Display',serif;font-size:16px;letter-spacing:1px;color:white;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.1);font-weight:500">Kurumsal</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if pages %}{% for page in pages %}<li><a href="/page/{{ page.slug }}" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ page.title }}</a></li>{% endfor %}{% endif %}
+          <li><a href="/return-policy/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İade &amp; Değişim</a></li>
+          <li><a href="/shipping-policy/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Kargo Bilgisi</a></li>
+          <li><a href="/contact-info/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İletişim</a></li>
+        </ul>
+      </div>
+
+      <!-- Info cards -->
+      <div>
+        <div style="border:1px solid rgba(255,255,255,0.1);padding:20px;margin-bottom:12px">
+          <p style="font-family:'Playfair Display',serif;font-size:16px;color:white;margin-bottom:6px;font-weight:500">Ücretsiz Kargo</p>
+          <p style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);line-height:1.6">1500₺ üzeri siparişlerde ücretsiz kargo</p>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.1);padding:20px;margin-bottom:12px">
+          <p style="font-family:'Playfair Display',serif;font-size:16px;color:white;margin-bottom:6px;font-weight:500">Kapıda Ödeme</p>
+          <p style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.5)">Tamamen ücretsiz</p>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.1);padding:20px">
+          <p style="font-family:'Playfair Display',serif;font-size:16px;color:white;margin-bottom:6px;font-weight:500">14 Gün İade</p>
+          <p style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.5)">Koşulsuz iade garantisi</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <p style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.35)">
+        {% if mysettings.0.footer_text %}{{ mysettings.0.footer_text }}{% else %}&copy; 2025 TICA FET. Tüm hakları saklıdır.{% endif %}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:20px">
+        <a href="/privacy-policy/" style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Gizlilik Politikası</a>
+        <a href="/terms-of-service/" style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Kullanım Koşulları</a>
+        <a href="/legal-notice/" style="font-size:12px;font-weight:300;color:rgba(255,255,255,0.35);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Çerez Politikası</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- RESPONSIVE -->
+<style>
+@media (min-width: 1024px) {
+  .lg-flex { display: flex !important; }
+  .lg-flex-item { display: flex !important; }
+  .lg-hidden { display: none !important; }
+  #desktopSearchForm { display: flex !important; position: relative; }
+  #main-grid { grid-template-columns: 1fr 380px !important; }
+  #order-summary-col > div { position: sticky; top: 88px; }
+}
+@media (max-width: 1023px) {
+  #desktopNav { display: none !important; }
+  #desktopSearchForm { display: none !important; }
+}
+</style>
+
+<script>
+/* ── SEARCH ── */
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput   = document.getElementById('searchInput');
+function openSearch()  { searchOverlay.classList.add('open'); document.body.style.overflow='hidden'; setTimeout(()=>searchInput&&searchInput.focus(),80); }
+function closeSearch() { searchOverlay.classList.remove('open'); document.body.style.overflow=''; if(searchInput) searchInput.value=''; }
+document.getElementById('searchOpenBtn').addEventListener('click', openSearch);
+document.getElementById('searchClose').addEventListener('click', closeSearch);
+searchOverlay.addEventListener('click', e=>{ if(e.target===searchOverlay) closeSearch(); });
+
+/* ── SIDEBAR ── */
+const sidebar        = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+function openSidebar()  { sidebar.classList.add('open'); sidebarOverlay.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('open'); document.body.style.overflow=''; }
+document.getElementById('hamburger').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+document.getElementById('sidebarSearchBtn').addEventListener('click', ()=>{ closeSidebar(); setTimeout(openSearch, 200); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeSearch(); closeSidebar(); } });
+
+/* ── SIDEBAR ACCORDION ── */
+function toggleSbCat(btn) {
+  const sub = btn.nextElementSibling;
+  const isOpen = sub.classList.contains('open');
+  document.querySelectorAll('.sb-sub-list.open').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.sb-cat-btn .fa-chevron-right').forEach(i => i.style.transform = 'rotate(0deg)');
+  if (!isOpen) { sub.classList.add('open'); btn.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)'; }
+}
+
+/* ── BASKET ── */
+function loadBasket() {
+  const basket    = JSON.parse(localStorage.getItem('basket') || '[]');
+  const container = document.getElementById('basket-container');
+
+  if (basket.length === 0) {
+    container.innerHTML = `
+      <div style="border:1px solid #e8e4de;background:white;padding:72px 24px;text-align:center">
+        <div style="width:72px;height:72px;border:1px solid #e0d5c5;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;border-radius:50%">
+          <i class="fas fa-shopping-bag" style="font-size:28px;color:#c9a96e"></i>
+        </div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:28px;letter-spacing:1px;color:#1a1a1a;margin-bottom:8px;font-weight:500">Sepetiniz Boş</h2>
+        <p style="font-size:14px;font-weight:300;color:#888;margin-bottom:32px;line-height:1.7">Beğendiğiniz ürünleri sepete ekleyerek<br>alışverişe başlayabilirsiniz.</p>
+        <a href="/" class="btn-elegant" style="background:#1a1a1a;color:white;font-size:12px;padding:16px 36px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border:none">
+          <i class="fas fa-arrow-left" style="font-size:11px"></i> Alışverişe Başla
+        </a>
+      </div>`;
+    document.getElementById('total-items').textContent = '0';
+    document.getElementById('subtotal-price').textContent = '0 ₺';
+    document.getElementById('total-price').textContent = '0 ₺';
+    document.getElementById('shipping-info').textContent = '—';
+    updateBasketCount();
+    return;
+  }
+
+  let totalItems = 0, totalPrice = 0;
+  let html = '<div style="display:flex;flex-direction:column">';
+
+  /* Section header */
+  html += `<div style="padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border:1px solid #e8e4de;border-bottom:none;background:white">
+    <h3 style="font-family:'Playfair Display',serif;font-size:18px;letter-spacing:0.5px;color:#1a1a1a;font-weight:500">Sepetim</h3>
+    <span style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:1px;color:#999;font-weight:400">${basket.reduce((s,i)=>s+i.quantity,0)} Ürün</span>
+  </div>`;
+
+  html += '<div style="border:1px solid #e8e4de;border-top:none;background:#FAFAF8;padding:16px;display:flex;flex-direction:column;gap:0">';
+
+  basket.forEach((item, i) => {
+    const lineTotal = item.price * item.quantity;
+    totalItems += item.quantity;
+    totalPrice += lineTotal;
+    const isLast = i === basket.length - 1;
+    html += `
+      <div class="basket-item" style="margin-bottom:${isLast?'0':'12px'}">
+        <!-- Image -->
+        <div style="width:80px;height:80px;flex-shrink:0;overflow:hidden;background:#f5f3ef">
+          ${item.image
+            ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f3ef"><i class="fas fa-image" style="font-size:20px;color:#d0c9bf"></i></div>`}
+        </div>
+        <!-- Body -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:12px">
+          <p style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:1.4;word-break:break-word">${item.name}</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <!-- Qty controls -->
+            <div style="display:flex;align-items:center;gap:0">
+              <button class="qty-btn" onclick="updateQuantity(${i},-1)" style="border-radius:0"><i class="fas fa-minus" style="font-size:9px"></i></button>
+              <span style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;min-width:36px;text-align:center;border-top:1px solid #d0c9bf;border-bottom:1px solid #d0c9bf;height:32px;line-height:32px">${item.quantity}</span>
+              <button class="qty-btn" onclick="updateQuantity(${i},1)" style="border-radius:0"><i class="fas fa-plus" style="font-size:9px"></i></button>
+            </div>
+            <!-- Price -->
+            <div style="text-align:right">
+              <p style="font-family:'Inter',sans-serif;font-size:16px;font-weight:600;color:#1a1a1a">\u20BA${lineTotal.toFixed(2)}</p>
+              <p style="font-size:11px;font-weight:400;color:#999">birim \u20BA${parseFloat(item.price).toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Remove -->
+        <button onclick="removeItem(${i})" style="background:none;border:none;cursor:pointer;color:#ccc;width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:color 0.2s;align-self:flex-start" onmouseover="this.style.color='#1a1a1a'" onmouseout="this.style.color='#ccc'">
+          <i class="fas fa-times" style="font-size:12px"></i>
+        </button>
+      </div>`;
+  });
+
+  html += '</div></div>';
+  container.innerHTML = html;
+
+  document.getElementById('total-items').textContent    = totalItems;
+  document.getElementById('subtotal-price').textContent = '\u20BA' + totalPrice.toFixed(2);
+  document.getElementById('total-price').textContent    = '\u20BA' + totalPrice.toFixed(2);
+  document.getElementById('shipping-info').textContent  = totalPrice >= 1500 ? 'ÜCRETSİZ' : '\u20BA29.90';
+
+  updateBasketCount();
+}
+
+function updateQuantity(idx, change) {
+  let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  if (!basket[idx]) return;
+  basket[idx].quantity += change;
+  if (basket[idx].quantity <= 0) { basket.splice(idx, 1); showToast('Ürün kaldırıldı', '#555'); }
+  localStorage.setItem('basket', JSON.stringify(basket));
+  loadBasket();
+}
+
+function removeItem(idx) {
+  let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  basket.splice(idx, 1);
+  localStorage.setItem('basket', JSON.stringify(basket));
+  loadBasket();
+  showToast('Ürün kaldırıldı', '#555');
+}
+
+function clearBasket() {
+  if (!confirm('Sepeti temizlemek istediğinize emin misiniz?')) return;
+  localStorage.removeItem('basket');
+  loadBasket();
+  showToast('Sepet temizlendi', '#1a1a1a');
+}
+
+function updateBasketCount() {
+  const basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const total = basket.reduce((s, i) => s + i.quantity, 0);
+  document.querySelectorAll('.badge-pulse').forEach(b => b.textContent = total || '0');
+}
+
+function showToast(msg, color) {
+  const el = document.createElement('div');
+  el.className = 'toast-pop';
+  el.style.background = color;
+  el.style.color = 'white';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+
+document.addEventListener('DOMContentLoaded', loadBasket);
+</script>
+</body>
+</html>
+{% endif %}
