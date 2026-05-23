@@ -1,0 +1,918 @@
+{% if mysettings.0.maintenance_mode %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:'Playfair Display',serif">
+<div style="text-align:center;color:#1a1a1a;border:1px solid #e0d6c8;padding:48px 64px;background:white;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
+<h1 style="font-size:48px;letter-spacing:6px;margin-bottom:12px;font-weight:500">{{ mysettings.0.site_name|default:"TICA FET" }}</h1>
+<p style="font-size:16px;letter-spacing:4px;color:#c9a96e;padding:8px 20px;display:inline-block;font-family:'Inter',sans-serif;font-weight:400;text-transform:uppercase">Bakım Modunda — Yakında Geri Döneceğiz</p>
+</div>
+</div>
+{% else %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ post.title }} - {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% endif %}</title>
+{% if mysettings.0.favicon %}<link rel="icon" href="{{ mysettings.0.favicon.url }}" type="image/x-icon">{% endif %}
+{% if post.meta_title %}<meta name="title" content="{{ post.meta_title }}">{% endif %}
+{% if post.meta_description %}<meta name="description" content="{{ post.meta_description }}">{% endif %}
+{% if post.meta_tags %}<meta name="keywords" content="{{ post.meta_tags }}">{% endif %}
+{% if mysettings.0.robots_txt %}<meta name="robots" content="{{ mysettings.0.robots_txt }}">{% endif %}
+{% if mysettings.0.og_title %}<meta property="og:title" content="{{ mysettings.0.og_title }}">{% endif %}
+{% if mysettings.0.og_description %}<meta property="og:description" content="{{ mysettings.0.og_description }}">{% endif %}
+{% if post.featured_image %}<meta property="og:image" content="{{ post.featured_image.url }}">{% elif mysettings.0.og_image %}<meta property="og:image" content="{{ mysettings.0.og_image.url }}">{% endif %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+
+{% if mysettings.0.html_head %}{{ mysettings.0.html_head|safe }}{% endif %}
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        lux: {
+          gold:    '#c9a96e',
+          dark:    '#1a1a1a',
+          sage:    '#d4ddd2',
+          cream:   '#FAFAF8',
+          warm:    '#f7f4f0',
+          white:   '#FFFFFF',
+          black:   '#111111',
+        }
+      },
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        body:    ['Inter', 'sans-serif'],
+      },
+      boxShadow: {
+        soft:   '0 2px 16px rgba(0,0,0,0.06)',
+        card:   '0 4px 24px rgba(0,0,0,0.07)',
+        hover:  '0 8px 32px rgba(0,0,0,0.10)',
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: #FAFAF8; color: #1a1a1a; overflow-x: hidden; }
+
+  /* TICKER */
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-inner { animation: ticker 22s linear infinite; display: flex; width: max-content; }
+  .ticker-inner:hover { animation-play-state: paused; }
+
+  /* NAV DROPDOWN */
+  .cat-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: white;
+    border: 1px solid #e8e4de;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    min-width: 200px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 200;
+  }
+  .cat-item:hover .cat-dropdown {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  /* SEARCH OVERLAY */
+  #searchOverlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  #searchOverlay.open { opacity: 1; pointer-events: all; }
+  #searchBox {
+    background: #FFFFFF;
+    border: 1px solid #e8e4de;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    width: min(600px, 90vw);
+    padding: 32px;
+    border-radius: 2px;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+  }
+  #searchOverlay.open #searchBox { transform: translateY(0); }
+  #searchInput {
+    width: 100%;
+    border: 1px solid #d5cec3;
+    background: #FAFAF8;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #searchInput:focus { border-color: #c9a96e; }
+
+  /* SIDEBAR */
+  #sidebarOverlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #sidebarOverlay.open { opacity: 1; pointer-events: all; }
+  #sidebar {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 400;
+    width: min(320px, 85vw);
+    background: #FFFFFF;
+    border-left: 1px solid #e8e4de;
+    transform: translateX(110%);
+    transition: transform 0.35s cubic-bezier(0.77,0,0.18,1);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  .sb-sub-list {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #FAFAF8;
+    border-top: 1px solid #e8e4de;
+  }
+  .sb-sub-list.open { max-height: 400px; }
+
+  /* BADGE PULSE */
+  .badge-pulse { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%,100% { transform:scale(1); }
+    50% { transform:scale(1.08); }
+  }
+
+  /* TOAST */
+  .toast-pop {
+    position: fixed; top: 80px; right: 20px; z-index: 9999;
+    padding: 14px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border: 1px solid #e8e4de;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    border-radius: 2px;
+    transform: translateX(120%);
+    transition: transform 0.35s cubic-bezier(0.18,0.89,0.32,1.28);
+  }
+  .toast-pop.show { transform: translateX(0); }
+
+  /* ELEGANT BUTTON */
+  .btn-elegant {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    font-size: 12px;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #1a1a1a;
+    padding: 12px 28px;
+    background: transparent;
+    color: #1a1a1a;
+  }
+  .btn-elegant:hover {
+    background: #1a1a1a;
+    color: #FFFFFF;
+  }
+
+  .btn-gold {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    font-size: 12px;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    padding: 14px 28px;
+    background: #c9a96e;
+    color: #FFFFFF;
+  }
+  .btn-gold:hover {
+    background: #b8964f;
+  }
+
+  /* BLOG CONTENT STYLES */
+  .blog-content {
+    line-height: 1.85;
+    font-family: 'Inter', sans-serif;
+  }
+  .blog-content h1,
+  .blog-content h2,
+  .blog-content h3,
+  .blog-content h4 {
+    font-family: 'Playfair Display', serif;
+    color: #1a1a1a;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+  .blog-content h1 { font-size: 2.4rem; }
+  .blog-content h2 { font-size: 2rem; }
+  .blog-content h3 { font-size: 1.6rem; }
+  .blog-content h4 { font-size: 1.3rem; }
+
+  .blog-content p {
+    margin-bottom: 1.4rem;
+    color: #444;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.85;
+  }
+
+  .blog-content ul, .blog-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.4rem;
+  }
+  .blog-content li {
+    margin-bottom: 0.6rem;
+    font-size: 15px;
+    font-weight: 400;
+    color: #444;
+  }
+  .blog-content ul li::marker { color: #c9a96e; font-size: 1.1em; }
+  .blog-content ol li::marker { color: #c9a96e; font-weight: 600; }
+
+  .blog-content a {
+    color: #c9a96e;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .blog-content a:hover { color: #1a1a1a; }
+
+  .blog-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 2rem 0;
+    border-radius: 2px;
+  }
+
+  .blog-content blockquote {
+    border-left: 3px solid #c9a96e;
+    padding: 20px 28px;
+    margin: 2rem 0;
+    font-style: italic;
+    font-weight: 400;
+    color: #555;
+    background: #f7f4f0;
+    font-size: 15px;
+    position: relative;
+  }
+  .blog-content blockquote::before {
+    content: '\201C';
+    font-family: 'Playfair Display', serif;
+    font-size: 60px;
+    color: rgba(201,169,110,0.25);
+    position: absolute;
+    top: -8px;
+    left: 16px;
+    line-height: 1;
+  }
+
+  .blog-content strong { color: #1a1a1a; font-weight: 600; }
+  .blog-content em { color: #666; font-style: italic; }
+
+  .blog-content code {
+    background: #f7f4f0;
+    color: #1a1a1a;
+    font-family: monospace;
+    padding: 2px 8px;
+    font-size: 13px;
+    border: 1px solid #e8e4de;
+    border-radius: 2px;
+  }
+
+  .blog-content pre {
+    background: #1a1a1a;
+    color: #e8e4de;
+    padding: 24px;
+    margin: 1.5rem 0;
+    border-radius: 2px;
+    overflow-x: auto;
+    font-size: 13px;
+  }
+
+  @media (min-width: 1024px) {
+    .lg-flex { display: flex !important; }
+    .lg-flex-item { display: flex !important; }
+    .lg-hidden { display: none !important; }
+    #desktopSearchForm { display: flex !important; }
+  }
+  @media (max-width: 1023px) {
+    #desktopNav { display: none !important; }
+    #desktopSearchForm { display: none !important; }
+  }
+
+  {% if mysettings.0.custom_css %}{{ mysettings.0.custom_css|safe }}{% endif %}
+</style>
+</head>
+<body>
+
+<!-- SEARCH OVERLAY -->
+<div id="searchOverlay">
+  <div id="searchBox">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span style="font-family:'Playfair Display',serif;font-size:22px;color:#1a1a1a;font-weight:500">Ara</span>
+      <button id="searchClose" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:22px;line-height:1;color:#999">&#10005;</button>
+    </div>
+    <form action="/search" method="get">
+      <input id="searchInput" name="q" placeholder="Ne arıyorsunuz..." type="text" autocomplete="off"/>
+    </form>
+    <p style="font-family:'Inter',sans-serif;font-size:12px;color:#999;margin-top:12px;font-weight:400;letter-spacing:0.5px">Popüler: Tişört · SweatShirt · Şort · Gömlek</p>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay"></div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="sidebar">
+  <div style="padding:20px;border-bottom:1px solid #e8e4de;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <a href="/" style="font-family:'Playfair Display',serif;font-size:22px;letter-spacing:3px;color:#1a1a1a;text-decoration:none;font-weight:500">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:36px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        TICA FET
+      {% endif %}
+    </a>
+    <button id="sidebarClose" style="background:none;border:1px solid #e8e4de;cursor:pointer;color:#1a1a1a;width:34px;height:34px;font-size:14px;display:flex;align-items:center;justify-content:center">&#10005;</button>
+  </div>
+
+  <div style="display:flex;border-bottom:1px solid #e8e4de;flex-shrink:0">
+    <button id="sidebarSearchBtn" style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #e8e4de;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:500">
+      <i class="fas fa-search"></i> ARA
+    </button>
+    <button style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #e8e4de;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:500">
+      <i class="fas fa-user"></i> HESAP
+    </button>
+    <a href="/basket/" style="flex:1;padding:16px 8px;text-decoration:none;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;font-weight:500">
+      <span style="position:relative;display:inline-block">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="badge-pulse" style="position:absolute;top:-8px;right:-8px;background:#c9a96e;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </span>
+      SEPET
+    </a>
+  </div>
+
+  <nav style="flex:1;padding:20px">
+    <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:#999;margin-bottom:14px;font-weight:500;text-transform:uppercase">Kategoriler</p>
+    <ul style="list-style:none">
+      <li>
+        <a href="/" style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #e8e4de;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none">
+          Anasayfa <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+        </a>
+      </li>
+      {% for cat in categories %}
+      <li>
+        {% if cat.sub_categories.all %}
+          <button class="sb-cat-btn" onclick="toggleSbCat(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 0;border:none;border-bottom:1px solid #e8e4de;background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-align:left">
+            <span>{{ cat.name }}</span>
+            <i class="fas fa-chevron-right" style="font-size:10px;color:#c9a96e;transition:transform 0.25s"></i>
+          </button>
+          <div class="sb-sub-list">
+            <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:10px 16px;font-size:13px;font-weight:500;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #e8e4de;background:#f7f4f0">— Tümünü Gör</a>
+            {% for sub in cat.sub_categories.all %}
+            <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:10px 16px;font-size:13px;font-weight:400;color:#555;text-decoration:none;border-bottom:1px solid #f0ece6">{{ sub.name }}</a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #e8e4de;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none">
+            {{ cat.name }} <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+          </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div style="padding:16px 20px;border-top:1px solid #e8e4de;background:#f7f4f0;flex-shrink:0">
+    <p style="font-size:11px;font-weight:400;color:#888;letter-spacing:0.3px">1500&#8378; üzeri ücretsiz kargo &middot; 14 gün iade garantisi</p>
+  </div>
+</div>
+
+<!-- TICKER / TOP BAR -->
+<div style="overflow:hidden;background:#1a1a1a;padding:10px 0">
+  <div class="ticker-inner" style="white-space:nowrap;gap:0">
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:2px;color:rgba(255,255,255,0.7);padding:0 32px;font-weight:400;text-transform:uppercase">
+      1500&#8378; Üzeri Ücretsiz Kargo
+      &nbsp;&nbsp;&bull;&nbsp;&nbsp;Kapıda Ödeme Ücretsiz
+      &nbsp;&nbsp;&bull;&nbsp;&nbsp;Yeni Koleksiyon
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&bull;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:2px;color:rgba(255,255,255,0.7);padding:0 32px;font-weight:400;text-transform:uppercase">
+      1500&#8378; Üzeri Ücretsiz Kargo
+      &nbsp;&nbsp;&bull;&nbsp;&nbsp;Kapıda Ödeme Ücretsiz
+      &nbsp;&nbsp;&bull;&nbsp;&nbsp;Yeni Koleksiyon
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&bull;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav style="position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,0.06)">
+  <div style="max-width:1400px;margin:0 auto;padding:0 20px;display:flex;align-items:stretch;height:68px;gap:16px">
+
+    <a href="/" style="display:flex;align-items:center;text-decoration:none;padding-right:24px;flex-shrink:0">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:40px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        <span style="font-family:'Playfair Display',serif;font-size:26px;letter-spacing:4px;color:#1a1a1a;line-height:1;font-weight:500">
+          TICA FET
+        </span>
+      {% endif %}
+    </a>
+
+    <ul style="display:none;list-style:none;align-items:stretch;gap:0;flex:1" class="lg-flex" id="desktopNav">
+      <li style="display:flex;align-items:center">
+        <a href="/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:1.5px;font-weight:500;color:#1a1a1a;text-decoration:none;text-transform:uppercase;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">ANASAYFA</a>
+      </li>
+      {% for cat in categories %}
+      <li class="cat-item" style="position:relative;display:flex;align-items:center">
+        <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:1.5px;font-weight:500;color:#1a1a1a;text-decoration:none;gap:5px;text-transform:uppercase;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+          {{ cat.name }}
+          {% if cat.sub_categories.all %}<i class="fas fa-chevron-down" style="font-size:8px;color:#c9a96e"></i>{% endif %}
+        </a>
+        {% if cat.sub_categories.all %}
+        <div class="cat-dropdown">
+          <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:12px 18px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:1.5px;font-weight:500;color:#1a1a1a;text-decoration:none;background:#f7f4f0;border-bottom:1px solid #e8e4de;text-transform:uppercase">Tümünü Gör</a>
+          {% for sub in cat.sub_categories.all %}
+          <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:10px 18px;font-size:13px;font-weight:400;color:#555;text-decoration:none;border-bottom:1px solid #f0ece6;transition:color 0.15s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#555'">{{ sub.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <form action="/search" method="get" style="display:none" class="lg-flex-item" id="desktopSearchForm" style="position:relative">
+        <input name="q" placeholder="Ürün ara..." type="text" style="border:1px solid #e8e4de;background:#FAFAF8;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;padding:9px 36px 9px 14px;width:180px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='#c9a96e'" onblur="this.style.borderColor='#e8e4de'"/>
+        <button type="submit" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999"><i class="fas fa-search" style="font-size:13px"></i></button>
+      </form>
+      <button id="searchOpenBtn" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #e8e4de;cursor:pointer;transition:border-color 0.2s" class="lg-hidden" onmouseover="this.style.borderColor='#c9a96e'" onmouseout="this.style.borderColor='#e8e4de'">
+        <i class="fas fa-search" style="font-size:13px;color:#1a1a1a"></i>
+      </button>
+      <button style="display:none;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #e8e4de;cursor:pointer;transition:all 0.2s" class="lg-flex-item" onmouseover="this.style.borderColor='#c9a96e'" onmouseout="this.style.borderColor='#e8e4de'">
+        <i class="fas fa-user" style="font-size:13px;color:#1a1a1a"></i>
+      </button>
+      <a href="/basket/" style="position:relative;display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #e8e4de;cursor:pointer;text-decoration:none;transition:border-color 0.2s" onmouseover="this.style.borderColor='#c9a96e'" onmouseout="this.style.borderColor='#e8e4de'">
+        <i class="fas fa-shopping-bag" style="font-size:13px;color:#1a1a1a"></i>
+        <span class="badge-pulse" style="position:absolute;top:-6px;right:-6px;background:#c9a96e;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </a>
+      <button id="hamburger" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:38px;height:38px;background:transparent;border:1px solid #e8e4de;cursor:pointer" class="lg-hidden">
+        <span style="display:block;width:16px;height:1.5px;background:#1a1a1a"></span>
+        <span style="display:block;width:12px;height:1.5px;background:#1a1a1a;align-self:flex-end;margin-right:10px"></span>
+        <span style="display:block;width:16px;height:1.5px;background:#1a1a1a"></span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="background:#FFFFFF;border-bottom:1px solid #f0ece6;padding:14px 20px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+      <a href="/" style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:0.5px;color:#999;text-decoration:none;font-weight:400;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#999'">Ana Sayfa</a>
+      <span style="font-size:12px;color:#ccc;margin:0 2px">/</span>
+      <a href="/category/" style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:0.5px;color:#999;text-decoration:none;font-weight:400;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#999'">Blog</a>
+      {% if post.category %}
+      <span style="font-size:12px;color:#ccc;margin:0 2px">/</span>
+      <a href="/category/{{ post.category.slug }}/" style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:0.5px;color:#999;text-decoration:none;font-weight:400;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#999'">{{ post.category.name }}</a>
+      {% endif %}
+      <span style="font-size:12px;color:#ccc;margin:0 2px">/</span>
+      <span style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:0.5px;color:#1a1a1a;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">{{ post.title|truncatechars:50 }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ARTICLE HERO -->
+<section style="position:relative;overflow:hidden;width:100%;min-height:480px;display:flex;align-items:flex-end">
+  {% if post.featured_image %}
+  <div style="position:absolute;inset:0">
+    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" style="width:100%;height:100%;object-fit:cover">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%)"></div>
+  </div>
+  {% else %}
+  <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1a1a1a 0%,#333 100%)">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,0.2)"></div>
+  </div>
+  {% endif %}
+
+  <div style="position:relative;z-index:5;max-width:1400px;margin:0 auto;padding:clamp(40px,6vw,80px) 20px;width:100%">
+    {% if post.category %}
+    <div style="display:inline-block;margin-bottom:20px">
+      <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;font-weight:500">{{ post.category.name }}</span>
+    </div>
+    {% endif %}
+
+    <h1 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4.5vw,56px);line-height:1.15;color:white;margin:0 0 24px;max-width:800px;font-weight:500">{{ post.title }}</h1>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px">
+      <div style="display:inline-flex;align-items:center;gap:8px">
+        <i class="fas fa-calendar-alt" style="font-size:12px;color:#c9a96e"></i>
+        <span style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.8);font-weight:400">{{ post.created_at|date:"d F Y" }}</span>
+      </div>
+      {% if post.author %}
+      <div style="display:inline-flex;align-items:center;gap:8px">
+        <i class="fas fa-user" style="font-size:12px;color:#c9a96e"></i>
+        <span style="font-family:'Inter',sans-serif;font-size:13px;color:rgba(255,255,255,0.8);font-weight:400">{{ post.author }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main style="background:#FAFAF8;padding:clamp(32px,5vw,64px) 20px">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:32px">
+    <div style="display:grid;gap:32px" id="contentGrid">
+
+      <div style="display:grid;grid-template-columns:1fr;gap:40px" class="article-layout">
+
+        <article style="background:white;border:1px solid #e8e4de;box-shadow:0 2px 16px rgba(0,0,0,0.04);padding:clamp(28px,4vw,56px)">
+          <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid #e8e4de">
+            <i class="fas fa-book-open" style="font-size:12px;color:#c9a96e"></i>
+            <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;color:#999;text-transform:uppercase;font-weight:500">Makale</span>
+          </div>
+
+          <div class="blog-content">
+            {{ post.content|safe }}
+          </div>
+        </article>
+
+        <!-- SOCIAL SHARE -->
+        <div style="background:white;border:1px solid #e8e4de;box-shadow:0 2px 16px rgba(0,0,0,0.04);padding:32px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+            <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:#1a1a1a;font-weight:500">Bu Yazıyı Paylaş</h3>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button onclick="shareOnSocial('linkedin')" class="btn-elegant" style="padding:10px 20px;font-size:12px">
+              <i class="fab fa-linkedin"></i> LinkedIn
+            </button>
+            <button onclick="shareOnSocial('twitter')" class="btn-elegant" style="padding:10px 20px;font-size:12px">
+              <i class="fab fa-twitter"></i> Twitter
+            </button>
+            <button onclick="shareOnSocial('facebook')" class="btn-elegant" style="padding:10px 20px;font-size:12px">
+              <i class="fab fa-facebook-f"></i> Facebook
+            </button>
+            <button onclick="shareOnSocial('copy')" class="btn-elegant" style="padding:10px 20px;font-size:12px;background:#1a1a1a;color:white">
+              <i class="fas fa-link"></i> <span id="copy-btn-text">Link Kopyala</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Two column layout wrapper -->
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;margin-top:0" id="twoCol">
+    <div style="display:none" id="leftSpacer"></div>
+
+    <!-- SIDEBAR: Related Posts -->
+    <aside>
+      <div style="background:white;border:1px solid #e8e4de;box-shadow:0 2px 16px rgba(0,0,0,0.04);padding:28px;position:sticky;top:88px">
+        <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:#1a1a1a;margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid #e8e4de;font-weight:500">İlgili Yazılar</h3>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          {% for featured in random_posts %}
+          <a href="/{{ featured.slug }}/" style="text-decoration:none;color:inherit;display:flex;align-items:flex-start;gap:14px;border-bottom:1px solid #f0ece6;padding-bottom:16px;transition:opacity 0.2s" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+            {% if featured.featured_image %}
+            <div style="width:72px;height:72px;flex-shrink:0;overflow:hidden;border-radius:2px">
+              <img src="{{ featured.featured_image.url }}" alt="{{ featured.title }}" style="width:100%;height:100%;object-fit:cover">
+            </div>
+            {% else %}
+            <div style="width:72px;height:72px;flex-shrink:0;background:#f7f4f0;display:flex;align-items:center;justify-content:center;border-radius:2px">
+              <i class="fas fa-image" style="font-size:20px;color:rgba(0,0,0,0.15)"></i>
+            </div>
+            {% endif %}
+            <div style="flex:1;min-width:0">
+              <div style="margin-bottom:4px">
+                <span style="font-family:'Inter',sans-serif;font-size:11px;color:#c9a96e;letter-spacing:0.5px;font-weight:500">{{ featured.created_at|date:"d M Y" }}</span>
+              </div>
+              <p style="font-size:13px;font-weight:500;color:#1a1a1a;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ featured.title }}</p>
+            </div>
+          </a>
+          {% empty %}
+          <div style="text-align:center;padding:24px;background:#f7f4f0">
+            <p style="font-family:'Inter',sans-serif;font-size:14px;color:#999;font-weight:400">Henüz yazı yok.</p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <a href="/category/" class="btn-elegant" style="margin-top:24px;text-decoration:none;width:100%;padding:12px 20px;font-size:11px;justify-content:center">
+          <i class="fas fa-arrow-left" style="font-size:10px"></i> Tüm Yazılar
+        </a>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<!-- NEWSLETTER -->
+<section style="padding:clamp(48px,8vw,88px) 20px;background:#f7f4f0;border-top:1px solid #e8e4de;border-bottom:1px solid #e8e4de">
+  <div style="max-width:500px;margin:0 auto;text-align:center">
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;font-weight:500;display:block;margin-bottom:16px">Bülten</span>
+    <h2 style="font-family:'Playfair Display',serif;font-size:32px;color:#1a1a1a;margin-bottom:10px;line-height:1.2;font-weight:500">
+      {% if mysettings.0.newsletter_title %}{{ mysettings.0.newsletter_title }}{% else %}Kampanyaları Kaçırmayın{% endif %}
+    </h2>
+    <p style="font-size:14px;font-weight:400;color:#888;margin-bottom:28px;line-height:1.6">Özel fırsatlar ve yeni ürünlerden ilk siz haberdar olun</p>
+
+    <form action="" method="post" style="display:flex;gap:0;border:1px solid #d5cec3">
+      {% csrf_token %}
+      <input name="email" type="email" placeholder="E-posta adresiniz..." required style="flex:1;min-width:0;padding:14px 18px;font-family:'Inter',sans-serif;font-size:14px;font-weight:400;border:none;outline:none;background:white"/>
+      <button type="submit" class="btn-gold" style="border:none;white-space:nowrap;border-radius:0;padding:14px 24px;font-size:12px">ABONE OL</button>
+    </form>
+    <p style="font-size:11px;font-weight:400;color:#bbb;margin-top:14px">Spam göndermeyiz. İstediğinde çıkabilirsin.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#1a1a1a;padding:clamp(40px,6vw,64px) 20px 24px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:40px;margin-bottom:48px">
+
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:28px;letter-spacing:4px;color:white;margin-bottom:16px;font-weight:500">
+          {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET{% endif %}
+        </div>
+        <div style="display:inline-block;margin-bottom:16px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;font-weight:400">MODA &amp; STİL</span>
+        </div>
+        {% if mysettings.0.contact_email %}
+        <a href="mailto:{{ mysettings.0.contact_email }}" style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:8px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-envelope" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_email }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_phone %}
+        <a href="tel:{{ mysettings.0.contact_phone }}" style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:8px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-phone" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_phone }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_address %}
+        <p style="display:flex;align-items:flex-start;gap:8px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);margin-bottom:8px">
+          <i class="fas fa-map-marker-alt" style="color:#c9a96e;margin-top:2px;flex-shrink:0;font-size:11px"></i> {{ mysettings.0.contact_address }}
+        </p>
+        {% endif %}
+        <div style="display:flex;gap:10px;margin-top:20px">
+          {% if mysettings.0.instagram_url %}
+          <a href="{{ mysettings.0.instagram_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-instagram" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.facebook_url %}
+          <a href="{{ mysettings.0.facebook_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-facebook-f" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.twitter_url %}
+          <a href="{{ mysettings.0.twitter_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-twitter" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.linkedin_url %}
+          <a href="{{ mysettings.0.linkedin_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.2s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-linkedin-in" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:14px;text-transform:uppercase;font-weight:500">Alışveriş</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          {% if categories %}
+            {% for category in categories %}
+            <li><a href="/products/category/{{ category.slug }}" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s;display:flex;align-items:center;gap:6px" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ category.name }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Yeni Gelenler</a></li>
+          <li><a href="#" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İndirimler</a></li>
+          <li><a href="#" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Koleksiyonlar</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:#c9a96e;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:14px;text-transform:uppercase;font-weight:500">Kurumsal</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          {% if pages %}
+            {% for page in pages %}
+            <li><a href="/page/{{ page.slug }}" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ page.title }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Sipariş Takip</a></li>
+          <li><a href="/return-policy/" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İade & Değişim</a></li>
+          <li><a href="/shipping-policy/" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Kargo Bilgisi</a></li>
+          <li><a href="/contact-info/" style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İletişim</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:20px">
+          <p style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:1px;color:white;margin-bottom:6px;font-weight:500">Ücretsiz Kargo</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);line-height:1.5">1500&#8378; üzeri siparişlerde</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:18px;margin-top:10px">
+          <p style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:1px;color:white;margin-bottom:4px;font-weight:500">Kapıda Ödeme</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5)">Tamamen ücretsiz</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:18px;margin-top:10px">
+          <p style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:1px;color:white;margin-bottom:4px;font-weight:500">14 Gün İade</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5)">Koşulsuz iade garantisi</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.35)">
+        {% if mysettings.0.footer_text %}{{ mysettings.0.footer_text }}{% else %}&copy; {% now "Y" %} {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% endif %}. Tüm hakları saklıdır.{% endif %}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:16px">
+        <a href="/privacy-policy/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.35);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Gizlilik Politikası</a>
+        <a href="/terms-of-service/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.35);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Kullanım Koşulları</a>
+        <a href="/legal-notice/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.35);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">Çerez Politikası</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- RESPONSIVE LAYOUT -->
+<style>
+  @media (min-width: 1024px) {
+    #contentGrid {
+      grid-template-columns: minmax(0,1fr) !important;
+    }
+    main > div:first-child {
+      display: block !important;
+    }
+    .article-layout {
+      display: grid !important;
+    }
+    #mainWrapper {
+      display: grid;
+      grid-template-columns: minmax(0,2fr) minmax(0,1fr);
+      gap: 32px;
+      align-items: start;
+    }
+  }
+</style>
+
+<!-- JAVASCRIPT -->
+<script>
+/* ── SEARCH ── */
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput   = document.getElementById('searchInput');
+function openSearch() { searchOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; setTimeout(() => searchInput && searchInput.focus(), 80); }
+function closeSearch() { searchOverlay.classList.remove('open'); document.body.style.overflow = ''; if (searchInput) searchInput.value = ''; }
+document.getElementById('searchOpenBtn').addEventListener('click', openSearch);
+document.getElementById('searchClose').addEventListener('click', closeSearch);
+searchOverlay.addEventListener('click', e => { if (e.target === searchOverlay) closeSearch(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSearch(); closeSidebar(); } });
+
+/* ── SIDEBAR ── */
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('hamburger').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+document.getElementById('sidebarSearchBtn').addEventListener('click', () => { closeSidebar(); setTimeout(openSearch, 200); });
+
+/* ── SIDEBAR ACCORDION ── */
+function toggleSbCat(btn) {
+  const sub = btn.nextElementSibling;
+  const isOpen = sub.classList.contains('open');
+  document.querySelectorAll('.sb-sub-list.open').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.sb-cat-btn .fa-chevron-right').forEach(i => i.style.transform = 'rotate(0deg)');
+  if (!isOpen) {
+    sub.classList.add('open');
+    btn.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
+  }
+}
+
+/* ── BASKET ── */
+function addToBasket(productId, productName, productPrice, productImage) {
+  let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const idx = basket.findIndex(item => item.id === productId);
+  if (idx > -1) {
+    basket[idx].quantity += 1;
+    showToast('Miktar artırıldı', '#1a1a1a');
+  } else {
+    basket.push({ id: productId, name: productName, price: productPrice, image: productImage, quantity: 1 });
+    showToast('Sepete eklendi', '#c9a96e');
+  }
+  localStorage.setItem('basket', JSON.stringify(basket));
+  updateBasketCount();
+}
+
+function updateBasketCount() {
+  const basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const total = basket.reduce((s, i) => s + i.quantity, 0);
+  document.querySelectorAll('.badge-pulse').forEach(b => b.textContent = total || '0');
+}
+
+function showToast(msg, color) {
+  const el = document.createElement('div');
+  el.className = 'toast-pop';
+  el.style.background = color;
+  el.style.color = 'white';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+
+document.addEventListener('DOMContentLoaded', updateBasketCount);
+
+/* ── SOCIAL SHARE ── */
+function shareOnSocial(platform) {
+  const url = window.location.href;
+  const title = document.title;
+  let shareUrl = '';
+  switch(platform) {
+    case 'linkedin':
+      shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+      break;
+    case 'twitter':
+      shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+      break;
+    case 'facebook':
+      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+      break;
+    case 'copy':
+      navigator.clipboard.writeText(url).then(() => {
+        const btnText = document.getElementById('copy-btn-text');
+        btnText.textContent = 'Kopyalandı!';
+        setTimeout(() => { btnText.textContent = 'Link Kopyala'; }, 2000);
+      });
+      return;
+  }
+  if (shareUrl) window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
+}
+
+/* ── DESKTOP LAYOUT: inject two-col ── */
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.innerWidth >= 1024) {
+    const mainEl = document.querySelector('main');
+    const articleLayout = document.querySelector('.article-layout');
+    const twoCol = document.getElementById('twoCol');
+    const aside = twoCol ? twoCol.querySelector('aside') : null;
+    if (articleLayout && aside) {
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;align-items:start;max-width:1400px;margin:0 auto';
+      articleLayout.parentNode.insertBefore(wrapper, articleLayout);
+      wrapper.appendChild(articleLayout);
+      wrapper.appendChild(aside);
+      if (twoCol) twoCol.remove();
+    }
+  }
+});
+</script>
+
+</body>
+</html>
+{% endif %}
