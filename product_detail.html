@@ -1,0 +1,856 @@
+{% if mysettings.0.maintenance_mode %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:'Playfair Display',serif">
+<div style="text-align:center;color:#1a1a1a;border:1px solid #eee;padding:48px 64px;background:white;box-shadow:0 8px 32px rgba(0,0,0,0.08)">
+<h1 style="font-size:48px;letter-spacing:6px;margin-bottom:12px;font-weight:400">{{ mysettings.0.site_name|default:"TICA FET" }}</h1>
+<p style="font-size:14px;letter-spacing:4px;text-transform:uppercase;color:#c9a96e;padding:8px 20px;display:inline-block">BAKIM MODUNDA — YAKINDA GERİ DÖNECEĞIZ</p>
+</div>
+</div>
+{% else %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>{% if product.meta_title %}{{ product.meta_title }}{% else %}{{ product.name }} — {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}Tica Fet{% endif %}{% endif %}</title>
+{% if mysettings.0.favicon %}<link href="{{ mysettings.0.favicon.url }}" rel="icon" type="image/x-icon"/>{% endif %}
+{% if product.meta_description %}<meta content="{{ product.meta_description }}" name="description"/>{% endif %}
+{% if product.meta_keywords %}<meta content="{{ product.meta_keywords }}" name="keywords"/>{% endif %}
+{% if mysettings.0.robots_txt %}<meta content="{{ mysettings.0.robots_txt }}" name="robots"/>{% endif %}
+{% if product.images.first %}<meta content="{{ product.images.first.image.url }}" property="og:image"/>{% endif %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+{% if mysettings.0.html_head %}{{ mysettings.0.html_head|safe }}{% endif %}
+<style>
+  @media (min-width: 1024px) {
+    .lg-flex { display: flex !important; }
+    .lg-flex-item { display: flex !important; }
+    .lg-hidden { display: none !important; }
+    #desktopSearchForm { display: flex !important; }
+    button[title="Hesabım"] { display: flex !important; }
+  }
+  @media (max-width: 1023px) {
+    #desktopNav { display: none !important; }
+    #desktopSearchForm { display: none !important; }
+  }
+</style>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
+body { font-family: 'Inter', sans-serif; background: #FAFAF8; color: #1a1a1a; overflow-x: hidden; }
+body.lock-scroll { overflow: hidden !important; position: fixed; width: 100%; }
+
+/* CARDS */
+.brutal-card { border:1px solid #eee; box-shadow:0 4px 20px rgba(0,0,0,0.06); transition:transform .3s,box-shadow .3s; }
+.brutal-card:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,0.10); }
+.btn-brutal { border:1px solid #1a1a1a; font-family:'Inter',sans-serif; letter-spacing:2px; text-transform:uppercase; font-size:11px; font-weight:600; transition:all .3s; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.btn-brutal:hover { background:#1a1a1a; color:white; }
+.btn-brutal:active { opacity:.85; }
+.zap-btn { position:relative; overflow:hidden; }
+.zap-btn::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0.2); transform:translateX(-100%); transition:transform .5s; }
+.zap-btn:hover::after { transform:translateX(100%); }
+
+/* TICKER */
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-inner { animation:ticker 22s linear infinite; display:flex; width:max-content; }
+
+/* NAV CAT DROPDOWN */
+.cat-item { position:relative; }
+.cat-dropdown { position:absolute; top:calc(100% + 4px); left:0; background:#fff; border:1px solid #eee; box-shadow:0 12px 40px rgba(0,0,0,0.10); min-width:200px; opacity:0; pointer-events:none; transform:translateY(-8px); transition:opacity .25s,transform .25s; z-index:200; }
+.cat-item:hover .cat-dropdown { opacity:1; pointer-events:all; transform:translateY(0); }
+
+/* SEARCH */
+#searchOverlay { position:fixed; inset:0; z-index:500; background:rgba(250,250,248,0.85); backdrop-filter:blur(16px); display:flex; align-items:flex-start; justify-content:center; padding-top:100px; opacity:0; pointer-events:none; transition:opacity .3s; }
+#searchOverlay.open { opacity:1; pointer-events:all; }
+#searchBox { background:white; border:1px solid #eee; box-shadow:0 16px 64px rgba(0,0,0,0.10); width:min(600px,90vw); padding:36px; transition:transform .3s; transform:translateY(-12px); }
+#searchOverlay.open #searchBox { transform:translateY(0); }
+#searchInput { width:100%; border:none; border-bottom:1px solid #ddd; background:transparent; font-family:'Inter',sans-serif; font-size:18px; font-weight:300; letter-spacing:1px; padding:12px 0; outline:none; transition:border-color .3s; }
+#searchInput:focus { border-color:#c9a96e; }
+
+/* SIDEBAR */
+#sidebarOverlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.3); backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .3s; }
+#sidebarOverlay.open { opacity:1; pointer-events:all; }
+#sidebar { position:fixed; top:0; right:0; bottom:0; z-index:400; width:min(340px,85vw); background:white; border-left:1px solid #eee; transform:translateX(110%); transition:transform .4s cubic-bezier(0.22,0.61,0.36,1); display:flex; flex-direction:column; overflow-y:auto; }
+#sidebar.open { transform:translateX(0); }
+.sb-sub-list { max-height:0; overflow:hidden; transition:max-height .3s; background:#FAFAF8; border-top:1px solid #eee; }
+.sb-sub-list.open { max-height:400px; }
+
+/* LIGHTBOX */
+#lightbox { position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.92); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .35s; }
+#lightbox.open { opacity:1; pointer-events:all; }
+#lightbox .lb-img-wrap { position:relative; max-width:90vw; max-height:88vh; transform:scale(.95); transition:transform .4s; }
+#lightbox.open .lb-img-wrap { transform:scale(1); }
+#lightbox .lb-img-wrap img { max-width:90vw; max-height:88vh; object-fit:contain; }
+#lightbox .lb-close { position:absolute; top:16px; right:16px; z-index:610; width:44px; height:44px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; font-weight:400; color:white; transition:background .3s; }
+#lightbox .lb-close:hover { background:rgba(255,255,255,0.2); }
+#lightbox .lb-nav { position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; color:white; transition:background .3s; }
+#lightbox .lb-nav:hover { background:rgba(255,255,255,0.2); }
+#lightbox .lb-prev { left:16px; }
+#lightbox .lb-next { right:16px; }
+#lightbox .lb-counter { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); font-family:'Inter',sans-serif; font-size:13px; letter-spacing:3px; color:rgba(255,255,255,0.6); font-weight:300; }
+#lightbox .lb-thumbs { position:absolute; bottom:48px; left:50%; transform:translateX(-50%); display:flex; gap:6px; }
+#lightbox .lb-thumbs button { width:52px; height:52px; border:2px solid transparent; cursor:pointer; overflow:hidden; opacity:.4; transition:all .3s; }
+#lightbox .lb-thumbs button.active { border-color:rgba(255,255,255,0.6); opacity:1; }
+#lightbox .lb-thumbs button img { width:100%; height:100%; object-fit:cover; }
+
+/* MAIN IMAGE */
+.main-img-wrap { cursor:zoom-in; position:relative; overflow:hidden; border:1px solid #eee; }
+.main-img-wrap img { transition:transform .6s; width:100%; height:100%; object-fit:contain; background:#FAFAF8; }
+.main-img-wrap:hover img { transform:scale(1.03); }
+.zoom-hint { position:absolute; bottom:12px; right:12px; background:rgba(255,255,255,0.9); backdrop-filter:blur(4px); border:1px solid #eee; padding:5px 14px; font-family:'Inter',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:500; opacity:0; transition:opacity .3s; color:#1a1a1a; }
+.main-img-wrap:hover .zoom-hint { opacity:1; }
+
+/* THUMBNAILS */
+.thumb-btn { border:2px solid transparent; overflow:hidden; transition:all .3s; }
+.thumb-btn:hover { border-color:#ddd; }
+.thumb-btn.active { border-color:#c9a96e; }
+
+/* VARIANT BTNS */
+.variant-btn { border:1px solid #e0e0e0; background:white; cursor:pointer; transition:all .3s; font-family:'Inter',sans-serif; position:relative; overflow:hidden; text-align:left; }
+.variant-btn:hover { border-color:#1a1a1a; }
+.variant-btn.selected { border-color:#c9a96e; background:#FAFAF8; }
+.variant-btn.selected .vname { color:#1a1a1a !important; }
+.variant-btn.selected .vprice { color:#c9a96e !important; }
+.variant-out { opacity:.35; cursor:not-allowed; }
+.variant-out::after { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:#ccc; transform:translateY(-50%); }
+.variant-out:hover { transform:none !important; border-color:#e0e0e0 !important; }
+
+/* TABS */
+.tab-btn { font-family:'Inter',sans-serif; font-weight:600; letter-spacing:1px; text-transform:uppercase; transition:all .3s; border:none; cursor:pointer; font-size:12px; }
+.tab-btn.active { background:#FAFAF8; border-bottom:2px solid #c9a96e; color:#1a1a1a; }
+
+/* ACCORDION */
+.acc-toggle i { transition:transform .3s; }
+.acc-toggle.open i { transform:rotate(180deg); }
+
+/* QTY */
+.qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+.qty-input { -moz-appearance:textfield; }
+
+/* TOAST */
+.toast-pop { position:fixed; top:24px; right:24px; z-index:9999; padding:16px 28px; font-family:'Inter',sans-serif; font-size:13px; font-weight:500; letter-spacing:1px; border:none; box-shadow:0 8px 32px rgba(0,0,0,0.12); transform:translateX(120%); transition:transform .4s cubic-bezier(0.22,0.61,0.36,1); }
+.toast-pop.show { transform:translateX(0); }
+
+/* BADGE */
+.badge-pulse { animation:none; }
+
+/* PRODUCT CARDS */
+.prod-card { border:1px solid #eee; transition:all .3s; overflow:hidden; background:white; }
+.prod-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.08); }
+.prod-img img { transition:transform .6s; }
+.prod-card:hover .prod-img img { transform:scale(1.04); }
+.prod-card:hover .quick-add-btn { opacity:1 !important; }
+
+/* PROSE */
+.product-prose { line-height:1.9; color:#555; font-weight:400; }
+.product-prose h1,.product-prose h2,.product-prose h3 { font-family:'Playfair Display',serif; font-weight:600; margin:1.4em 0 .6em; color:#1a1a1a; }
+.product-prose h2 { font-size:1.4em; }
+.product-prose p { margin-bottom:1em; }
+.product-prose ul,.product-prose ol { margin:.7em 0; padding-left:1.5em; }
+.product-prose li { margin-bottom:.4em; }
+.product-prose img { max-width:100% !important; height:auto !important; margin:1.2em 0; }
+.product-prose a { color:#c9a96e; font-weight:600; }
+
+/* HIDE SCROLLBAR */
+.hide-scroll { scrollbar-width:none; }
+.hide-scroll::-webkit-scrollbar { display:none; }
+
+/* RESPONSIVE */
+@media (min-width:1024px) {
+  .lg-flex { display:flex !important; }
+  .lg-hidden { display:none !important; }
+  #desktopSearch { display:flex !important; }
+  #desktopNav { display:flex !important; }
+}
+@media (max-width:1023px) {
+  #desktopNav { display:none !important; }
+  #desktopSearch { display:none !important; }
+}
+
+{% if mysettings.0.custom_css %}{{ mysettings.0.custom_css|safe }}{% endif %}
+</style>
+</head>
+<body>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">&#10005;</button>
+  <button class="lb-nav lb-prev" onclick="lbNav(-1)">&#8249;</button>
+  <div class="lb-img-wrap"><img id="lbImage" src="" alt=""/></div>
+  <button class="lb-nav lb-next" onclick="lbNav(1)">&#8250;</button>
+  <div class="lb-thumbs" id="lbThumbs"></div>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<div id="searchOverlay">
+  <div id="searchBox">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <span style="font-family:'Playfair Display',serif;font-size:22px;color:#1a1a1a;font-weight:500">Arama</span>
+      <button id="searchClose" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:22px;line-height:1;color:#999;font-weight:300">&#10005;</button>
+    </div>
+    <form action="/search" method="get">
+      <input id="searchInput" name="q" placeholder="Ne arıyorsunuz..." type="text" autocomplete="off"/>
+    </form>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;color:#999;margin-top:16px;font-weight:400;letter-spacing:1px">POPÜLER: Tişört · SweatShirt · Şort · Gömlek</p>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay"></div>
+
+<!-- MOBILE SIDEBAR -->
+<div id="sidebar">
+  <div style="padding:24px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <a href="/" style="font-family:'Playfair Display',serif;font-size:22px;letter-spacing:3px;color:#1a1a1a;text-decoration:none;font-weight:500">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:36px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        TICA FET
+      {% endif %}
+    </a>
+    <button id="sidebarClose" style="background:none;border:1px solid #eee;cursor:pointer;color:#1a1a1a;width:34px;height:34px;font-size:16px;display:flex;align-items:center;justify-content:center;font-weight:300">&#10005;</button>
+  </div>
+
+  <div style="display:flex;border-bottom:1px solid #eee;flex-shrink:0">
+    <button id="sidebarSearchBtn" style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #eee;cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px">
+      <i class="fas fa-search" style="font-size:14px"></i> ARA
+    </button>
+    <button style="flex:1;padding:16px 8px;background:none;border:none;border-right:1px solid #eee;cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px">
+      <i class="fas fa-user" style="font-size:14px"></i> HESAP
+    </button>
+    <a href="/basket/" style="flex:1;padding:16px 8px;text-decoration:none;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative">
+      <span style="position:relative;display:inline-block">
+        <i class="fas fa-shopping-bag" style="font-size:14px"></i>
+        <span class="badge-pulse" style="position:absolute;top:-6px;right:-8px;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </span>
+      SEPET
+    </a>
+  </div>
+
+  <nav style="flex:1;padding:24px">
+    <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:#999;margin-bottom:16px;font-weight:500;text-transform:uppercase">Kategoriler</p>
+    <ul style="list-style:none">
+      <li>
+        <a href="/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#1a1a1a;text-decoration:none">
+          Anasayfa <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+        </a>
+      </li>
+      {% for cat in categories %}
+      <li>
+        {% if cat.sub_categories.all %}
+          <button class="sb-cat-btn" onclick="toggleSbCat(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border:none;border-bottom:1px solid #eee;background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#1a1a1a;text-align:left">
+            <span>{{ cat.name }}</span>
+            <i class="fas fa-chevron-right" style="font-size:9px;color:#c9a96e;transition:transform 0.25s"></i>
+          </button>
+          <div class="sb-sub-list">
+            <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:11px 16px;font-size:12px;font-weight:600;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #eee;letter-spacing:1px">Tümünü Gör</a>
+            {% for sub in cat.sub_categories.all %}
+            <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:11px 16px;font-size:12px;font-weight:400;color:#666;text-decoration:none;border-bottom:1px solid #f5f5f5">{{ sub.name }}</a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#1a1a1a;text-decoration:none">
+            {{ cat.name }} <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+          </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div style="padding:16px 24px;border-top:1px solid #eee;flex-shrink:0">
+    <p style="font-size:11px;font-weight:400;color:#999;letter-spacing:0.5px">1500₺ üzeri ücretsiz kargo · 14 gün iade garantisi</p>
+  </div>
+</div>
+
+<!-- TICKER / TOP BAR -->
+<div style="overflow:hidden;background:#1a1a1a;padding:10px 0">
+  <div class="ticker-inner" style="white-space:nowrap;gap:0">
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.8);padding:0 40px;font-weight:400;text-transform:uppercase">
+      1500₺ ÜZERİ ÜCRETSİZ KARGO
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;KAPIDA ÖDEME ÜCRETSİZ
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;YENİ KOLEKSİYON
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.8);padding:0 40px;font-weight:400;text-transform:uppercase">
+      1500₺ ÜZERİ ÜCRETSİZ KARGO
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;KAPIDA ÖDEME ÜCRETSİZ
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;YENİ KOLEKSİYON
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav style="position:sticky;top:0;z-index:100;background:rgba(250,250,248,0.95);backdrop-filter:blur(12px);border-bottom:1px solid #eee">
+  <div style="max-width:1400px;margin:0 auto;padding:0 20px;display:flex;align-items:stretch;height:68px;gap:16px">
+
+    <!-- LOGO -->
+    <a href="/" style="display:flex;align-items:center;text-decoration:none;padding-right:24px;flex-shrink:0">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:40px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        <span style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;color:#1a1a1a;line-height:1;font-weight:500">
+          TICA FET
+        </span>
+      {% endif %}
+    </a>
+
+    <!-- DESKTOP CATEGORIES -->
+    <ul style="display:none;list-style:none;align-items:stretch;gap:0;flex:1" class="lg-flex" id="desktopNav">
+      <li style="display:flex;align-items:center">
+        <a href="/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">ANASAYFA</a>
+      </li>
+      {% for cat in categories %}
+      <li class="cat-item" style="position:relative;display:flex;align-items:center">
+        <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;height:100%;padding:0 18px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;text-decoration:none;gap:6px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+          {{ cat.name }}
+          {% if cat.sub_categories.all %}<i class="fas fa-chevron-down" style="font-size:8px;color:#c9a96e"></i>{% endif %}
+        </a>
+        {% if cat.sub_categories.all %}
+        <div class="cat-dropdown">
+          <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:12px 20px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #eee">TÜMÜNÜ GÖR</a>
+          {% for sub in cat.sub_categories.all %}
+          <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:10px 20px;font-size:12px;font-weight:400;color:#666;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#666'">{{ sub.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- RIGHT ACTIONS -->
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <!-- DESKTOP SEARCH BAR -->
+      <form action="/search" method="get" style="display:none" class="lg-flex-item" id="desktopSearchForm" style="position:relative">
+        <input name="q" placeholder="Ürün ara..." type="text" style="border:none;border-bottom:1px solid #ddd;background:transparent;font-family:'Inter',sans-serif;font-size:12px;font-weight:400;padding:8px 36px 8px 2px;width:180px;outline:none;transition:border-color 0.3s" onfocus="this.style.borderColor='#c9a96e'" onblur="this.style.borderColor='#ddd'"/>
+        <button type="submit" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999"><i class="fas fa-search" style="font-size:12px"></i></button>
+      </form>
+      <!-- MOBILE SEARCH BTN -->
+      <button id="searchOpenBtn" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #eee;cursor:pointer;transition:border-color .3s" class="lg-hidden" onmouseover="this.style.borderColor='#1a1a1a'" onmouseout="this.style.borderColor='#eee'">
+        <i class="fas fa-search" style="font-size:13px;color:#1a1a1a"></i>
+      </button>
+      <!-- ACCOUNT -->
+      <button style="display:none;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #eee;cursor:pointer;transition:border-color .3s" class="lg-flex-item" onmouseover="this.style.borderColor='#1a1a1a'" onmouseout="this.style.borderColor='#eee'">
+        <i class="fas fa-user" style="font-size:13px;color:#1a1a1a"></i>
+      </button>
+      <!-- CART -->
+      <a href="/basket/" style="position:relative;display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:transparent;border:1px solid #eee;cursor:pointer;text-decoration:none;transition:border-color .3s" onmouseover="this.style.borderColor='#1a1a1a'" onmouseout="this.style.borderColor='#eee'">
+        <i class="fas fa-shopping-bag" style="font-size:13px;color:#1a1a1a"></i>
+        <span class="badge-pulse" style="position:absolute;top:-6px;right:-6px;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-weight:600">0</span>
+      </a>
+      <!-- HAMBURGER -->
+      <button id="hamburger" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:38px;height:38px;background:transparent;border:1px solid #eee;cursor:pointer" class="lg-hidden">
+        <span style="display:block;width:16px;height:1.5px;background:#1a1a1a"></span>
+        <span style="display:block;width:12px;height:1.5px;background:#1a1a1a;align-self:flex-end;margin-right:10px"></span>
+        <span style="display:block;width:16px;height:1.5px;background:#1a1a1a"></span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="background:white;border-bottom:1px solid #eee">
+  <div style="max-width:1400px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:10px;font-family:'Inter',sans-serif;font-size:11px;font-weight:400;letter-spacing:0.5px">
+    <a href="/" style="color:#999;text-decoration:none;transition:color .2s" onmouseover="this.style.color='#1a1a1a'" onmouseout="this.style.color='#999'">Ana Sayfa</a>
+    <span style="color:#ddd;font-size:12px">/</span>
+    {% if product.category %}
+    <a href="/products/category/{{ product.category.slug }}" style="color:#999;text-decoration:none;transition:color .2s" onmouseover="this.style.color='#1a1a1a'" onmouseout="this.style.color='#999'">{{ product.category.name }}</a>
+    <span style="color:#ddd;font-size:12px">/</span>
+    {% endif %}
+    <span style="color:#1a1a1a;font-weight:500">{{ product.name|truncatechars:40 }}</span>
+  </div>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<section style="background:#FAFAF8;padding:clamp(32px,5vw,64px) 20px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:1fr;gap:48px" id="productGrid">
+
+      <!-- LEFT: IMAGES -->
+      <div>
+        <div class="main-img-wrap" style="aspect-ratio:4/5;max-width:100%;margin-bottom:12px" onclick="openLightbox(currentImgIdx)">
+          {% if product.images.first %}
+          <img id="mainImage" src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="display:block"/>
+          {% else %}
+          <img id="mainImage" src="" alt="{{ product.name }}" style="display:block;background:#f5f0e8"/>
+          {% endif %}
+          <div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px;z-index:2">
+            {% if product.is_new %}<span style="background:#1a1a1a;color:white;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:5px 12px">YENİ</span>{% endif %}
+            {% if product.is_on_sale %}<span style="background:#c9a96e;color:white;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:5px 12px">İNDİRİM</span>{% endif %}
+            {% if product.stock > 0 %}<span style="background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);color:#1a1a1a;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:5px 12px;border:1px solid #eee">STOKTA</span>{% endif %}
+          </div>
+          <div class="zoom-hint"><i class="fas fa-search-plus" style="font-size:10px;margin-right:4px"></i> BÜYÜT</div>
+        </div>
+        {% if product.images.all %}
+        <div class="hide-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+          {% for image in product.images.all %}
+          <button class="thumb-btn {% if forloop.first %}active{% endif %}" onclick="changeImage('{{ image.image.url }}', {{ forloop.counter0 }}, this)" style="width:72px;height:88px;flex-shrink:0;padding:0;cursor:pointer;background:none">
+            <img src="{{ image.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover;display:block"/>
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: INFO -->
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+          {% if product.category %}
+          <a href="/products/category/{{ product.category.slug }}" style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#c9a96e;text-decoration:none;border-bottom:1px solid #c9a96e;padding-bottom:2px">{{ product.category.name|upper }}</a>
+          {% endif %}
+          {% if product.sku %}<span style="font-size:10px;font-weight:400;color:#bbb;letter-spacing:1px">SKU: {{ product.sku }}</span>{% endif %}
+          {% if product.reviews.all %}
+          <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+            <i class="fas fa-star" style="font-size:11px;color:#c9a96e"></i>
+            <span style="font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#1a1a1a">4.8</span>
+            <span style="font-size:11px;font-weight:400;color:#999">({{ product.reviews.count }})</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(26px,4vw,42px);font-weight:500;color:#1a1a1a;line-height:1.15;margin-bottom:16px">{{ product.name }}</h1>
+
+        {% if product.description %}
+        <p style="font-size:13px;font-weight:400;color:#777;line-height:1.8;margin-bottom:20px">{{ product.description|safe }}</p>
+        {% endif %}
+
+        <!-- PRICE BLOCK -->
+        <div style="padding:20px 0;margin-bottom:20px;border-top:1px solid #eee;border-bottom:1px solid #eee;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+          <span style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,40px);font-weight:500;color:#1a1a1a;line-height:1">₺{{ product.price }}</span>
+          {% if product.old_price %}<span style="font-size:16px;font-weight:400;color:#bbb;text-decoration:line-through">₺{{ product.old_price }}</span>{% endif %}
+          <div style="margin-left:auto;font-size:11px;font-weight:400;color:#999">
+            <span>KDV Dahil</span>
+            <span style="margin-left:12px;color:#999"><i class="fas fa-truck" style="margin-right:4px;color:#c9a96e"></i> 1.500₺ Üzeri Ücretsiz</span>
+          </div>
+        </div>
+
+        <!-- VARIANTS -->
+        {% if product.variants.all %}
+        <div style="margin-bottom:24px">
+          <p style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;margin-bottom:12px">
+            SEÇENEK: <span id="selectedVariant" style="color:#c9a96e">Seçiniz</span>
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+            {% for variant in product.variants.all %}
+            <button class="variant-btn {% if variant.stock == 0 %}variant-out{% endif %}" onclick="{% if variant.stock > 0 %}selectVariant('{{ variant.id }}','₺{{ variant.final_price }}',this){% endif %}" style="padding:14px 16px;border-radius:0">
+              <div class="vname" style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:4px;word-break:break-word">{% for value in variant.values.all %}{{ value.value }}{% if not forloop.last %} · {% endif %}{% endfor %}</div>
+              <div class="vprice" style="font-family:'Playfair Display',serif;font-size:16px;color:#c9a96e">₺{{ variant.final_price }}</div>
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- STOCK STATUS -->
+        {% if product.stock > 0 %}
+        <div style="background:#f7f7f5;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;border-left:3px solid #c9a96e">
+          <i class="fas fa-check-circle" style="font-size:16px;color:#c9a96e"></i>
+          <div><p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:#1a1a1a">STOKTA VAR</p><p style="font-size:11px;font-weight:400;color:#999">Hızlı teslimat</p></div>
+        </div>
+        {% else %}
+        <div style="background:#f7f7f5;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;border-left:3px solid #ccc">
+          <i class="fas fa-times-circle" style="font-size:16px;color:#999"></i>
+          <div><p style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;color:#1a1a1a">STOK TÜKENDİ</p><p style="font-size:11px;font-weight:400;color:#999">Gelince haber ver seçeneğini kullanabilirsiniz</p></div>
+        </div>
+        {% endif %}
+
+        <!-- QTY + ADD TO CART -->
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;border:1px solid #e0e0e0;overflow:hidden;flex-shrink:0">
+              <button onclick="changeQty(-1)" style="width:44px;height:48px;background:white;border:none;border-right:1px solid #e0e0e0;cursor:pointer;font-family:'Inter',sans-serif;font-size:16px;color:#1a1a1a;transition:background .2s" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">−</button>
+              <input class="qty-input" id="quantity" type="number" value="1" min="1" max="{{ product.stock }}" style="width:52px;text-align:center;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;border:none;outline:none;height:48px;background:white;color:#1a1a1a"/>
+              <button onclick="changeQty(1)" style="width:44px;height:48px;background:white;border:none;border-left:1px solid #e0e0e0;cursor:pointer;font-family:'Inter',sans-serif;font-size:16px;color:#1a1a1a;transition:background .2s" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='white'">+</button>
+            </div>
+            <button class="btn-brutal zap-btn" onclick="addToBasket('{{ product.id }}','{{ product.name }}',{{ product.price }},'{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}')" style="flex:1;min-width:160px;background:#1a1a1a;color:white;font-size:11px;padding:18px 24px;border:1px solid #1a1a1a;letter-spacing:2px;text-transform:uppercase">
+              <i class="fas fa-shopping-bag" style="font-size:12px"></i> SEPETE EKLE
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button class="btn-brutal zap-btn" style="background:#c9a96e;color:white;font-size:11px;padding:14px 16px;border:1px solid #c9a96e;letter-spacing:2px;text-transform:uppercase" onmouseover="this.style.background='#b8944f'" onmouseout="this.style.background='#c9a96e'"><i class="fas fa-bolt" style="font-size:11px"></i> HEMEN AL</button>
+            <button class="btn-brutal" style="background:white;color:#1a1a1a;font-size:11px;padding:14px 16px;border:1px solid #e0e0e0;letter-spacing:2px;text-transform:uppercase"><i class="far fa-heart" style="font-size:11px"></i> FAVORİ</button>
+          </div>
+        </div>
+
+        <!-- TRUST BADGES -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px;padding-top:28px;border-top:1px solid #eee">
+          <div style="text-align:center;padding:16px 8px">
+            <i class="fas fa-shield-alt" style="font-size:18px;color:#c9a96e;display:block;margin-bottom:8px"></i>
+            <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:1px;font-weight:600;text-transform:uppercase;color:#1a1a1a">GÜVENLİ</p>
+            <p style="font-size:10px;font-weight:400;color:#999;margin-top:2px">SSL Sertifikalı</p>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <i class="fas fa-undo" style="font-size:18px;color:#c9a96e;display:block;margin-bottom:8px"></i>
+            <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:1px;font-weight:600;text-transform:uppercase;color:#1a1a1a">KOLAY İADE</p>
+            <p style="font-size:10px;font-weight:400;color:#999;margin-top:2px">14 Gün İçinde</p>
+          </div>
+          <div style="text-align:center;padding:16px 8px">
+            <i class="fas fa-leaf" style="font-size:18px;color:#c9a96e;display:block;margin-bottom:8px"></i>
+            <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:1px;font-weight:600;text-transform:uppercase;color:#1a1a1a">ORGANİK</p>
+            <p style="font-size:10px;font-weight:400;color:#999;margin-top:2px">%100 Doğal</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT TABS -->
+<section style="background:white;padding:clamp(32px,5vw,56px) 20px;border-top:1px solid #eee">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="border:1px solid #eee;overflow:hidden;background:white">
+      <div style="display:flex;border-bottom:1px solid #eee;overflow-x:auto" class="hide-scroll">
+        <button class="tab-btn active" onclick="showTab('description',this)" style="flex:1;min-width:160px;padding:18px 20px;background:#FAFAF8;color:#1a1a1a;border-bottom:2px solid #c9a96e;border-right:1px solid #eee">ÜRÜN AÇIKLAMASI</button>
+        {% if product.reviews.all %}<button class="tab-btn" onclick="showTab('reviews',this)" style="flex:1;min-width:160px;padding:18px 20px;background:white;color:#999;border-right:1px solid #eee">YORUMLAR ({{ product.reviews.count }})</button>{% endif %}
+        {% if product.faqs.all %}<button class="tab-btn" onclick="showTab('faq',this)" style="flex:1;min-width:160px;padding:18px 20px;background:white;color:#999">SIKÇA SORULANLAR</button>{% endif %}
+      </div>
+      <div style="padding:clamp(24px,4vw,48px)">
+        <div class="tab-content" id="tab-description">
+          <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:500;color:#1a1a1a;margin-bottom:20px">Ürün Hakkında</h2>
+          <div class="product-prose">
+            {% if product.description %}{{ product.description|safe }}{% else %}<p>Ürün açıklaması henüz eklenmemiş.</p>{% endif %}
+          </div>
+        </div>
+
+        {% if product.reviews.all %}
+        <div class="tab-content" id="tab-reviews" style="display:none">
+          <div style="display:flex;flex-wrap:wrap;gap:24px;margin-bottom:36px">
+            <div style="background:#FAFAF8;border:1px solid #eee;padding:28px 36px;text-align:center;min-width:130px">
+              <p style="font-family:'Playfair Display',serif;font-size:42px;color:#1a1a1a;line-height:1;font-weight:500">4.8</p>
+              <div style="display:flex;justify-content:center;gap:3px;margin:8px 0">{% for i in "12345" %}<i class="fas fa-star" style="font-size:12px;color:#c9a96e"></i>{% endfor %}</div>
+              <p style="font-size:11px;font-weight:400;color:#999">{{ product.reviews.count }} değerlendirme</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            {% for review in product.reviews.all %}{% if review.is_approved %}
+            <div style="background:white;border:1px solid #eee;padding:24px">
+              <div style="display:flex;align-items:flex-start;gap:16px">
+                <img src="{% if review.photo %}{{ review.photo.url }}{% else %}https://ui-avatars.com/api/?name={{ review.full_name }}&background=f5f5f5&color=1a1a1a&size=44{% endif %}" alt="{{ review.full_name }}" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;object-fit:cover"/>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+                    <div>
+                      <p style="font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:#1a1a1a">{{ review.full_name }}</p>
+                      <div style="display:flex;gap:2px;margin-top:2px">{% for i in "12345" %}<i class="fas fa-star" style="font-size:9px;color:#c9a96e"></i>{% endfor %}</div>
+                    </div>
+                    <span style="font-size:11px;font-weight:400;color:#bbb">{{ review.created_at|timesince }} önce</span>
+                  </div>
+                  <p style="font-size:13px;font-weight:400;color:#666;line-height:1.8">{{ review.comment }}</p>
+                  <div style="margin-top:10px"><span style="color:#c9a96e;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:1px;font-weight:500">DOĞRULANMIŞ ALIM</span></div>
+                </div>
+              </div>
+            </div>
+            {% endif %}{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if product.faqs.all %}
+        <div class="tab-content" id="tab-faq" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:0">
+            {% for faq in product.faqs.all %}{% if faq.is_active %}
+            <div style="border-bottom:1px solid #eee">
+              <button class="acc-toggle" onclick="toggleAcc(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 0;background:transparent;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;font-size:13px;color:#1a1a1a;text-align:left">
+                <span>{{ faq.question }}</span>
+                <i class="fas fa-chevron-down" style="font-size:10px;color:#c9a96e;flex-shrink:0;margin-left:12px"></i>
+              </button>
+              <div class="acc-content" style="display:none;padding:0 0 18px 0;font-size:13px;font-weight:400;color:#777;line-height:1.8">{{ faq.answer }}</div>
+            </div>
+            {% endif %}{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RELATED PRODUCTS -->
+{% if random_products %}
+<section style="background:#FAFAF8;padding:clamp(40px,6vw,72px) 20px;border-top:1px solid #eee">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:36px;flex-wrap:wrap">
+      <div>
+        <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;font-weight:500;margin-bottom:6px">İLGİNİZİ ÇEKEBİLİR</p>
+        <h2 style="font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,34px);font-weight:500;color:#1a1a1a;line-height:1">Beğenebileceğiniz Ürünler</h2>
+      </div>
+      <a href="/" style="margin-left:auto;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:#1a1a1a;text-decoration:none;border:1px solid #1a1a1a;padding:10px 24px;transition:all .3s" onmouseover="this.style.background='#1a1a1a';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#1a1a1a'">TÜMÜNÜ GÖR</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px">
+      {% for rp in random_products %}
+      <div class="prod-card" onmouseenter="this.querySelector('.quick-add-btn').style.opacity='1'" onmouseleave="this.querySelector('.quick-add-btn').style.opacity='0'">
+        <a href="/product/{{ rp.slug }}/" style="text-decoration:none;color:inherit;display:block">
+          <div class="prod-img" style="aspect-ratio:3/4;overflow:hidden;position:relative">
+            {% if rp.images.first %}<img src="{{ rp.images.first.image.url }}" alt="{{ rp.name }}" style="width:100%;height:100%;object-fit:cover;display:block"/>{% else %}<div style="width:100%;height:100%;background:#f5f0e8;display:flex;align-items:center;justify-content:center"><i class="fas fa-image" style="font-size:28px;color:#ddd"></i></div>{% endif %}
+            {% if rp.is_new %}<div style="position:absolute;top:10px;left:10px"><span style="background:#1a1a1a;color:white;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:4px 10px">YENİ</span></div>{% endif %}
+            <button class="quick-add-btn" onclick="addToBasket('{{ rp.id }}','{{ rp.name }}',{{ rp.price }},'{% if rp.images.first %}{{ rp.images.first.image.url }}{% endif %}');event.preventDefault();event.stopPropagation();" style="position:absolute;bottom:10px;right:10px;background:#1a1a1a;color:white;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:8px 14px;opacity:0;transition:opacity .3s;border:none;cursor:pointer">EKLE</button>
+          </div>
+          <div style="padding:16px 14px">
+            {% if rp.category %}<span style="font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#c9a96e">{{ rp.category.name }}</span>{% endif %}
+            <p style="font-size:13px;font-weight:500;color:#1a1a1a;margin:6px 0 10px;line-height:1.3">{{ rp.name }}</p>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Playfair Display',serif;font-size:17px;color:#1a1a1a;font-weight:500">₺{{ rp.price }}</span>
+              {% if rp.old_price %}<span style="font-size:12px;color:#bbb;text-decoration:line-through;font-weight:400">₺{{ rp.old_price }}</span>{% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- NEWSLETTER -->
+<section style="padding:clamp(48px,8vw,80px) 20px;background:#f7f4f0;border-top:1px solid #eee">
+  <div style="max-width:480px;margin:0 auto;text-align:center">
+    <div style="background:white;padding:40px 36px;box-shadow:0 8px 32px rgba(0,0,0,0.06)">
+      <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;font-weight:500;margin-bottom:16px">BÜLTEN</p>
+      <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:500;color:#1a1a1a;margin-bottom:8px;line-height:1.2">Kampanyaları Kaçırmayın</h2>
+      <p style="font-size:13px;font-weight:400;color:#999;margin-bottom:24px">Yeni koleksiyonlar ve özel indirimler için abone olun.</p>
+      {% if messages %}{% for message in messages %}<div style="background:#f7f7f5;padding:12px 16px;margin-bottom:16px;border-left:3px solid #c9a96e"><span style="font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#1a1a1a">{{ message }}</span></div>{% endfor %}{% endif %}
+      <form action="" method="post" style="display:flex;border:1px solid #e0e0e0">
+        {% csrf_token %}
+        <input name="email" type="email" placeholder="E-posta adresiniz" required style="flex:1;min-width:0;padding:14px 16px;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;border:none;outline:none;background:white"/>
+        <button type="submit" style="background:#1a1a1a;color:white;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;padding:14px 22px;border:none;cursor:pointer;white-space:nowrap;transition:background .3s" onmouseover="this.style.background='#333'" onmouseout="this.style.background='#1a1a1a'">ABONE OL</button>
+      </form>
+      <p style="font-size:11px;font-weight:400;color:#bbb;margin-top:12px">Spam göndermeyiz. İstediğinizde çıkabilirsiniz.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#1a1a1a;padding:clamp(48px,6vw,72px) 20px 28px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:48px;margin-bottom:56px">
+      
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:26px;letter-spacing:4px;color:white;margin-bottom:12px;font-weight:500">
+          {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET{% endif %}
+        </div>
+        <div style="margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;font-weight:400">MODA & STİL</span>
+        </div>
+        {% if mysettings.0.contact_email %}
+        <a href="mailto:{{ mysettings.0.contact_email }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-envelope" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_email }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_phone %}
+        <a href="tel:{{ mysettings.0.contact_phone }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-phone" style="color:#c9a96e;font-size:11px"></i> {{ mysettings.0.contact_phone }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_address %}
+        <p style="display:flex;align-items:flex-start;gap:10px;font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);margin-bottom:10px">
+          <i class="fas fa-map-marker-alt" style="color:#c9a96e;margin-top:2px;flex-shrink:0;font-size:11px"></i> {{ mysettings.0.contact_address }}
+        </p>
+        {% endif %}
+        <div style="display:flex;gap:10px;margin-top:24px">
+          {% if mysettings.0.instagram_url %}
+          <a href="{{ mysettings.0.instagram_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-instagram" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.facebook_url %}
+          <a href="{{ mysettings.0.facebook_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-facebook-f" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.twitter_url %}
+          <a href="{{ mysettings.0.twitter_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-twitter" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.linkedin_url %}
+          <a href="{{ mysettings.0.linkedin_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-linkedin-in" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:500">ALIŞVERİŞ</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if categories %}
+            {% for category in categories %}
+            <li><a href="/products/category/{{ category.slug }}" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ category.name }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Yeni Gelenler</a></li>
+          <li><a href="#" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İndirimler</a></li>
+          <li><a href="#" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Koleksiyonlar</a></li>
+          <li><a href="#" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Hediye Setleri</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#c9a96e;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:500">KURUMSAL</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if pages %}
+            {% for page in pages %}
+            <li><a href="/page/{{ page.slug }}" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ page.title }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Sipariş Takip</a></li>
+          <li><a href="/return-policy/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İade & Değişim</a></li>
+          <li><a href="/shipping-policy/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Kargo Bilgisi</a></li>
+          <li><a href="/contact-info/" style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İletişim</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div>
+        <div style="border:1px solid rgba(255,255,255,0.08);padding:24px;margin-bottom:12px">
+          <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:white;margin-bottom:6px">ÜCRETSİZ KARGO</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.4)">1500₺ üzeri siparişlerde</p>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.08);padding:24px;margin-bottom:12px">
+          <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:white;margin-bottom:6px">KAPIDA ÖDEME</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.4)">Tamamen ücretsiz</p>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.08);padding:24px">
+          <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:500;color:white;margin-bottom:6px">14 GÜN İADE</p>
+          <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,0.4)">Koşulsuz iade garantisi</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <p style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.3)">
+        {% if mysettings.0.footer_text %}{{ mysettings.0.footer_text }}{% else %}© 2025 Tica Fet. Tüm hakları saklıdır.{% endif %}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:20px">
+        <a href="/privacy-policy/" style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.3);text-decoration:none;transition:color .3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">Gizlilik Politikası</a>
+        <a href="/terms-of-service/" style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.3);text-decoration:none;transition:color .3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">Kullanım Koşulları</a>
+        <a href="/legal-notice/" style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.3);text-decoration:none;transition:color .3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">Çerez Politikası</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- RESPONSIVE GRID -->
+<style>
+@media (min-width:900px) { #productGrid { grid-template-columns:1fr 1fr !important; } }
+</style>
+
+<script>
+/* ── LIGHTBOX ── */
+let lbImages = [], lbIdx = 0, currentImgIdx = 0;
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.thumb-btn img').forEach(img => lbImages.push(img.src));
+  if (!lbImages.length) { const m = document.getElementById('mainImage'); if (m && m.src) lbImages.push(m.src); }
+  buildLbThumbs();
+  updateBasketCount();
+});
+function buildLbThumbs() {
+  const t = document.getElementById('lbThumbs');
+  if (lbImages.length <= 1) { t.style.display = 'none'; return; }
+  t.innerHTML = lbImages.map((s,i) => `<button onclick="lbGoTo(${i})" class="${i===0?'active':''}"><img src="${s}" alt=""/></button>`).join('');
+}
+function openLightbox(i) { lbIdx = i || 0; document.getElementById('lbImage').src = lbImages[lbIdx]; updateLbUI(); document.getElementById('lightbox').classList.add('open'); document.body.classList.add('lock-scroll'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.body.classList.remove('lock-scroll'); }
+function lbNav(d) { lbIdx = ((lbIdx + d) % lbImages.length + lbImages.length) % lbImages.length; document.getElementById('lbImage').src = lbImages[lbIdx]; updateLbUI(); }
+function lbGoTo(i) { lbIdx = i; document.getElementById('lbImage').src = lbImages[lbIdx]; updateLbUI(); }
+function updateLbUI() {
+  document.getElementById('lbCounter').textContent = `${lbIdx+1} / ${lbImages.length}`;
+  document.querySelectorAll('#lbThumbs button').forEach((b,i) => b.classList.toggle('active', i === lbIdx));
+}
+document.getElementById('lightbox').addEventListener('click', e => { if (e.target === document.getElementById('lightbox')) closeLightbox(); });
+document.addEventListener('keydown', e => { if (!document.getElementById('lightbox').classList.contains('open')) return; if (e.key==='Escape') closeLightbox(); if (e.key==='ArrowLeft') lbNav(-1); if (e.key==='ArrowRight') lbNav(1); });
+let lbTX = 0;
+document.getElementById('lightbox').addEventListener('touchstart', e => { lbTX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('lightbox').addEventListener('touchend', e => { if (Math.abs(lbTX - e.changedTouches[0].clientX) > 50) lbNav(lbTX - e.changedTouches[0].clientX > 0 ? 1 : -1); }, {passive:true});
+
+/* ── CHANGE IMAGE ── */
+function changeImage(url, idx, el) {
+  document.getElementById('mainImage').src = url;
+  currentImgIdx = idx;
+  document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ── SEARCH ── */
+const sO = document.getElementById('searchOverlay'), sI = document.getElementById('searchInput');
+function openSearch() { sO.classList.add('open'); document.body.classList.add('lock-scroll'); setTimeout(() => sI && sI.focus(), 80); }
+function closeSearch() { sO.classList.remove('open'); document.body.classList.remove('lock-scroll'); if (sI) sI.value = ''; }
+document.getElementById('searchOpenBtn').addEventListener('click', openSearch);
+document.getElementById('searchClose').addEventListener('click', closeSearch);
+sO.addEventListener('click', e => { if (e.target === sO) closeSearch(); });
+
+/* ── SIDEBAR ── */
+const sb = document.getElementById('sidebar'), sbO = document.getElementById('sidebarOverlay');
+function openSidebar() { sb.classList.add('open'); sbO.classList.add('open'); document.body.classList.add('lock-scroll'); }
+function closeSidebar() { sb.classList.remove('open'); sbO.classList.remove('open'); document.body.classList.remove('lock-scroll'); }
+document.getElementById('hamburger').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+sbO.addEventListener('click', closeSidebar);
+document.getElementById('sidebarSearchBtn').addEventListener('click', () => { closeSidebar(); setTimeout(openSearch, 200); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSearch(); closeSidebar(); closeLightbox(); } });
+
+/* ── TABS ── */
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(b => { b.style.background = 'white'; b.style.color = '#999'; b.style.borderBottom = 'none'; b.classList.remove('active'); });
+  const el = document.getElementById('tab-' + name);
+  if (el) el.style.display = 'block';
+  if (btn) { btn.style.background = '#FAFAF8'; btn.style.color = '#1a1a1a'; btn.style.borderBottom = '2px solid #c9a96e'; btn.classList.add('active'); }
+}
+
+/* ── ACCORDION ── */
+function toggleAcc(btn) {
+  const c = btn.nextElementSibling;
+  const open = c.style.display !== 'none';
+  c.style.display = open ? 'none' : 'block';
+  btn.classList.toggle('open', !open);
+}
+
+/* ── VARIANTS ── */
+function selectVariant(id, price, el) {
+  const sv = document.getElementById('selectedVariant');
+  if (sv) sv.textContent = el.querySelector('.vname').textContent.trim();
+  document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ── QTY ── */
+function changeQty(d) {
+  const inp = document.getElementById('quantity');
+  const max = parseInt(inp.max) || 999;
+  const v = parseInt(inp.value) || 1;
+  inp.value = Math.max(1, Math.min(max, v + d));
+}
+
+/* ── BASKET ── */
+function addToBasket(id, name, price, image) {
+  let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const qty = parseInt(document.getElementById('quantity')?.value) || 1;
+  const idx = basket.findIndex(i => i.id === id);
+  if (idx > -1) { basket[idx].quantity += qty; showToast('Miktar güncellendi', '#1a1a1a'); }
+  else { basket.push({ id, name, price, image, quantity: qty }); showToast('Sepete eklendi', '#1a1a1a'); }
+  localStorage.setItem('basket', JSON.stringify(basket));
+  updateBasketCount();
+}
+function updateBasketCount() {
+  const t = JSON.parse(localStorage.getItem('basket') || '[]').reduce((s, i) => s + i.quantity, 0);
+  document.querySelectorAll('.badge-pulse').forEach(b => b.textContent = t || '0');
+}
+function showToast(msg, color) {
+  const el = document.createElement('div'); el.className = 'toast-pop'; el.style.background = color; el.style.color = 'white'; el.textContent = msg;
+  document.body.appendChild(el); requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+</script>
+</body>
+</html>
+{% endif %}
