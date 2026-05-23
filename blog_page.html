@@ -1,0 +1,991 @@
+{% if mysettings.0.maintenance_mode %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;font-family:'Playfair Display',serif">
+<div style="text-align:center;color:#1a1a1a;padding:48px 64px">
+<h1 style="font-size:48px;letter-spacing:6px;margin-bottom:16px;font-weight:400">{{ mysettings.0.site_name|default:"TICA FET" }}</h1>
+<div style="width:60px;height:1px;background:#c9a96e;margin:0 auto 20px"></div>
+<p style="font-size:14px;letter-spacing:4px;color:#888;font-family:'Inter',sans-serif;font-weight:300">BAKIM MODUNDA — YAKINDA GERİ DÖNECEĞIZ</p>
+</div>
+</div>
+{% else %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>{% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET — Moda & Stil{% endif %}</title>
+{% if mysettings.0.favicon %}<link href="{{ mysettings.0.favicon.url }}" rel="icon" type="image/x-icon"/>{% endif %}
+{% if mysettings.0.seo_meta_title %}<meta content="{{ mysettings.0.seo_meta_title }}" name="title"/>{% endif %}
+{% if mysettings.0.seo_meta_description %}<meta content="{{ mysettings.0.seo_meta_description }}" name="description"/>{% endif %}
+{% if mysettings.0.seo_keywords %}<meta content="{{ mysettings.0.seo_keywords }}" name="keywords"/>{% endif %}
+{% if mysettings.0.robots_txt %}<meta content="{{ mysettings.0.robots_txt }}" name="robots"/>{% endif %}
+{% if mysettings.0.og_title %}<meta content="{{ mysettings.0.og_title }}" property="og:title"/>{% endif %}
+{% if mysettings.0.og_description %}<meta content="{{ mysettings.0.og_description }}" property="og:description"/>{% endif %}
+{% if mysettings.0.og_image %}<meta content="{{ mysettings.0.og_image.url }}" property="og:image"/>{% endif %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+
+{% if mysettings.0.html_head %}{{ mysettings.0.html_head|safe }}{% endif %}
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          gold:    '#c9a96e',
+          blush:   '#f0e0d6',
+          sage:    '#d4ddd2',
+          ivory:   '#FAFAF8',
+          charcoal:'#1a1a1a',
+          warm:    '#f5f0eb',
+          stone:   '#8a8680',
+          pearl:   '#f7f4f0',
+        }
+      },
+      fontFamily: {
+        display: ['Playfair Display', 'serif'],
+        body:    ['Inter', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: #FAFAF8; color: #1a1a1a; overflow-x: hidden; }
+
+  /* ELEGANT CARD */
+  .elegant-card {
+    background: white;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
+  }
+  .elegant-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  }
+
+  /* REFINED BUTTON */
+  .btn-refined {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-refined:hover {
+    transform: translateY(-1px);
+  }
+
+  /* TICKER ANIMATION */
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-inner { animation: ticker 30s linear infinite; display: flex; width: max-content; }
+  .ticker-inner:hover { animation-play-state: paused; }
+
+  /* NAV DROPDOWN */
+  .cat-dropdown {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    background: white;
+    border: 1px solid #eee;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+    min-width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 200;
+  }
+  .cat-item:hover .cat-dropdown {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  /* SEARCH OVERLAY */
+  #searchOverlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 120px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  #searchOverlay.open { opacity: 1; pointer-events: all; }
+  #searchBox {
+    background: white;
+    border: none;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.12);
+    width: min(600px, 90vw);
+    padding: 40px;
+    transform: translateY(-16px);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  #searchOverlay.open #searchBox { transform: translateY(0); }
+  #searchInput {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #1a1a1a;
+    background: transparent;
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 400;
+    padding: 12px 0;
+    outline: none;
+    color: #1a1a1a;
+    transition: border-color 0.3s;
+  }
+  #searchInput::placeholder { color: #ccc; }
+  #searchInput:focus { border-color: #c9a96e; }
+
+  /* SIDEBAR */
+  #sidebarOverlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  #sidebarOverlay.open { opacity: 1; pointer-events: all; }
+  #sidebar {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 400;
+    width: min(360px, 85vw);
+    background: #FAFAF8;
+    border-left: 1px solid #eee;
+    transform: translateX(110%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  /* SIDEBAR ACCORDION */
+  .sb-sub-list {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: #f7f4f0;
+  }
+  .sb-sub-list.open { max-height: 400px; }
+
+  /* PRODUCT BADGE */
+  .badge-new { background: #1a1a1a; color: white; font-family: 'Inter'; font-size: 10px; letter-spacing: 2px; font-weight: 600; }
+  .badge-sale { background: #c9a96e; color: white; font-family: 'Inter'; font-size: 10px; letter-spacing: 2px; font-weight: 600; }
+  .badge-feat { background: #d4ddd2; color: #1a1a1a; font-family: 'Inter'; font-size: 10px; letter-spacing: 2px; font-weight: 600; }
+
+  /* TOAST */
+  .toast-pop {
+    position: fixed; top: 24px; right: 24px; z-index: 9999;
+    padding: 16px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .toast-pop.show { transform: translateX(0); }
+
+  /* BANNER TRACK */
+  .banner-track { display: flex; transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
+  /* BADGE PULSE */
+  .badge-pulse { animation: none; }
+
+  /* SCROLL HIDE */
+  .hide-scroll::-webkit-scrollbar { display:none; }
+
+  /* SUBTLE IMAGE REVEAL */
+  .img-reveal {
+    overflow: hidden;
+  }
+  .img-reveal img {
+    transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .img-reveal:hover img {
+    transform: scale(1.04);
+  }
+
+  /* QUICK ADD FADE */
+  .quick-add-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    display: flex;
+    justify-content: center;
+  }
+  .elegant-card:hover .quick-add-wrap {
+    opacity: 1;
+  }
+
+  /* THIN SEPARATOR */
+  .separator {
+    width: 48px;
+    height: 1px;
+    background: #c9a96e;
+  }
+
+  {% if mysettings.0.custom_css %}{{ mysettings.0.custom_css|safe }}{% endif %}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     SEARCH OVERLAY
+════════════════════════════════ -->
+<div id="searchOverlay">
+  <div id="searchBox">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;color:#1a1a1a;font-weight:500;letter-spacing:2px">Arama</span>
+      <button id="searchClose" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;color:#1a1a1a;padding:4px"><i class="fas fa-times"></i></button>
+    </div>
+    <form action="/search" method="get">
+      <input id="searchInput" name="q" placeholder="Ne arıyorsunuz..." type="text" autocomplete="off"/>
+    </form>
+    <p style="font-family:'Inter',sans-serif;font-size:11px;color:#999;margin-top:16px;letter-spacing:1px;font-weight:400">POPÜLER: Elbise · Ceket · Pantolon · Aksesuar</p>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay"></div>
+
+<!-- ════════════════════════════════
+     MOBILE SIDEBAR
+════════════════════════════════ -->
+<div id="sidebar">
+  <!-- Sidebar Header -->
+  <div style="padding:28px 24px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <a href="/" style="font-family:'Playfair Display',serif;font-size:22px;letter-spacing:4px;color:#1a1a1a;text-decoration:none;font-weight:500">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:32px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        TICA FET
+      {% endif %}
+    </a>
+    <button id="sidebarClose" style="background:none;border:none;cursor:pointer;color:#1a1a1a;width:36px;height:36px;font-size:16px;display:flex;align-items:center;justify-content:center"><i class="fas fa-times"></i></button>
+  </div>
+
+  <!-- Sidebar Quick Icons -->
+  <div style="display:flex;border-bottom:1px solid #eee;flex-shrink:0">
+    <button id="sidebarSearchBtn" style="flex:1;padding:18px 8px;background:none;border:none;border-right:1px solid #eee;cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:500">
+      <i class="fas fa-search" style="font-size:14px"></i> ARA
+    </button>
+    <button style="flex:1;padding:18px 8px;background:none;border:none;border-right:1px solid #eee;cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;color:#1a1a1a;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:500">
+      <i class="fas fa-user" style="font-size:14px"></i> HESAP
+    </button>
+    <a href="/basket/" style="flex:1;padding:18px 8px;text-decoration:none;color:#1a1a1a;font-family:'Inter',sans-serif;font-size:10px;letter-spacing:2px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:500;position:relative">
+      <span style="position:relative;display:inline-block">
+        <i class="fas fa-shopping-bag" style="font-size:14px"></i>
+        <span class="badge-pulse" style="position:absolute;top:-6px;right:-8px;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter';font-weight:600">0</span>
+      </span>
+      SEPET
+    </a>
+  </div>
+
+  <!-- Sidebar Categories Accordion -->
+  <nav style="flex:1;padding:24px">
+    <p style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:4px;color:#999;margin-bottom:16px;font-weight:500">KATEGORİLER</p>
+    <ul style="list-style:none">
+      <li>
+        <a href="/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none;letter-spacing:0.5px">
+          Anasayfa <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+        </a>
+      </li>
+      {% for cat in categories %}
+      <li>
+        {% if cat.sub_categories.all %}
+          <button class="sb-cat-btn" onclick="toggleSbCat(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 0;border:none;border-bottom:1px solid #eee;background:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-align:left;letter-spacing:0.5px">
+            <span>{{ cat.name }}</span>
+            <i class="fas fa-chevron-right" style="font-size:9px;color:#c9a96e;transition:transform 0.3s"></i>
+          </button>
+          <div class="sb-sub-list">
+            <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:12px 20px;font-size:12px;font-weight:600;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #eee;letter-spacing:1px">Tümünü Gör</a>
+            {% for sub in cat.sub_categories.all %}
+            <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:12px 20px;font-size:12px;font-weight:400;color:#666;text-decoration:none;border-bottom:1px solid #eee;letter-spacing:0.5px">{{ sub.name }}</a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #eee;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#1a1a1a;text-decoration:none;letter-spacing:0.5px">
+            {{ cat.name }} <i class="fas fa-arrow-right" style="font-size:10px;color:#c9a96e"></i>
+          </a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+  <div style="padding:20px 24px;border-top:1px solid #eee;flex-shrink:0">
+    <p style="font-size:11px;font-weight:400;color:#999;letter-spacing:0.5px;line-height:1.6">Ücretsiz kargo · 14 gün iade garantisi</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     TICKER / TOP BAR
+════════════════════════════════ -->
+<div style="overflow:hidden;border-bottom:1px solid #eee;padding:10px 0;background:#1a1a1a">
+  <div class="ticker-inner" style="white-space:nowrap;gap:0">
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.7);padding:0 40px;font-weight:400">
+      ÜCRETSİZ KARGO — 1500₺ ÜZERİ SİPARİŞLERDE
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;KAPIDA ÖDEME
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;YENİ KOLEKSİYON
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+    {% for i in "12345678901234" %}
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.7);padding:0 40px;font-weight:400">
+      ÜCRETSİZ KARGO — 1500₺ ÜZERİ SİPARİŞLERDE
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;KAPIDA ÖDEME
+      &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;YENİ KOLEKSİYON
+      {% if mysettings.0.contact_phone %}&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;{{ mysettings.0.contact_phone }}{% endif %}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     NAVBAR
+════════════════════════════════ -->
+<nav style="position:sticky;top:0;z-index:100;background:rgba(250,250,248,0.95);backdrop-filter:blur(12px);border-bottom:1px solid #eee">
+  <div style="max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;height:72px;gap:20px">
+
+    <!-- LOGO -->
+    <a href="/" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0">
+      {% if mysettings.0.site_logo %}
+        <img alt="{{ mysettings.0.site_name }}" style="height:36px;width:auto" src="{{ mysettings.0.site_logo.url }}"/>
+      {% else %}
+        <span style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;color:#1a1a1a;font-weight:500">
+          TICA FET
+        </span>
+      {% endif %}
+    </a>
+
+    <!-- DESKTOP CATEGORIES -->
+    <ul style="display:none;list-style:none;align-items:center;gap:0;flex:1;justify-content:center" class="lg-flex" id="desktopNav">
+      <li style="display:flex;align-items:center">
+        <a href="/" style="display:flex;align-items:center;padding:8px 20px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;font-weight:500;color:#1a1a1a;text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">ANASAYFA</a>
+      </li>
+      {% for cat in categories %}
+      <li class="cat-item" style="position:relative;display:flex;align-items:center">
+        <a href="/products/category/{{ cat.slug }}/" style="display:flex;align-items:center;padding:8px 20px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;font-weight:500;color:#1a1a1a;text-decoration:none;gap:6px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+          {{ cat.name }}
+          {% if cat.sub_categories.all %}<i class="fas fa-chevron-down" style="font-size:7px;color:#c9a96e"></i>{% endif %}
+        </a>
+        {% if cat.sub_categories.all %}
+        <div class="cat-dropdown">
+          <a href="/products/category/{{ cat.slug }}/" style="display:block;padding:14px 24px;font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;font-weight:600;color:#1a1a1a;text-decoration:none;border-bottom:1px solid #eee;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">TÜMÜNÜ GÖR</a>
+          {% for sub in cat.sub_categories.all %}
+          <a href="/products/subcategory/{{ sub.id }}/{{ sub.slug }}/" style="display:block;padding:12px 24px;font-size:12px;font-weight:400;color:#666;text-decoration:none;border-bottom:1px solid #f5f5f5;transition:color 0.2s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#666'">{{ sub.name }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- RIGHT ACTIONS -->
+    <div style="margin-left:auto;display:flex;align-items:center;gap:16px;flex-shrink:0">
+      <!-- DESKTOP SEARCH BAR -->
+      <form action="/search" method="get" style="display:none;position:relative" class="lg-flex-item" id="desktopSearchForm">
+        <input name="q" placeholder="Ara..." type="text" style="border:none;border-bottom:1px solid #ddd;background:transparent;font-family:'Inter',sans-serif;font-size:12px;font-weight:400;padding:8px 32px 8px 0;width:160px;outline:none;transition:border-color 0.3s;color:#1a1a1a" onfocus="this.style.borderColor='#c9a96e'" onblur="this.style.borderColor='#ddd'"/>
+        <button type="submit" style="position:absolute;right:0;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#999"><i class="fas fa-search" style="font-size:12px"></i></button>
+      </form>
+      <!-- MOBILE SEARCH BTN -->
+      <button id="searchOpenBtn" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;cursor:pointer" class="lg-hidden">
+        <i class="fas fa-search" style="font-size:15px;color:#1a1a1a"></i>
+      </button>
+      <!-- ACCOUNT -->
+      <button style="display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;cursor:pointer;transition:color 0.3s;color:#1a1a1a" class="lg-flex-item" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+        <i class="fas fa-user" style="font-size:15px"></i>
+      </button>
+      <!-- CART -->
+      <a href="/basket/" style="position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;text-decoration:none;transition:color 0.3s;color:#1a1a1a" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">
+        <i class="fas fa-shopping-bag" style="font-size:15px"></i>
+        <span class="badge-pulse" style="position:absolute;top:0;right:-4px;background:#1a1a1a;color:white;font-size:8px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Inter';font-weight:600">0</span>
+      </a>
+      <!-- HAMBURGER -->
+      <button id="hamburger" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:36px;height:36px;background:transparent;border:none;cursor:pointer" class="lg-hidden">
+        <span style="display:block;width:20px;height:1.5px;background:#1a1a1a"></span>
+        <span style="display:block;width:14px;height:1.5px;background:#1a1a1a;align-self:flex-end"></span>
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ════════════════════════════════
+     HERO BANNER
+════════════════════════════════ -->
+{% if banners %}
+<section style="position:relative;overflow:hidden;width:100%;aspect-ratio:16/7;max-height:720px">
+  <div class="banner-track" id="bannerTrack" style="width:{{ banners|length }}00%;height:100%;display:flex">
+    {% for banner in banners %}
+    <div style="width:calc(100% / {{ banners|length }});height:100%;flex-shrink:0;position:relative;display:flex;align-items:center">
+      {% if banner.image %}
+      <img src="{{ banner.image.url }}" alt="{{ banner.title }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" loading="eager" fetchpriority="high"/>
+      {% else %}
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,#f5f0eb,#d4ddd2)"></div>
+      {% endif %}
+      <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 50%, transparent 100%)"></div>
+      <div style="position:relative;z-index:5;padding:clamp(32px,6vw,80px);max-width:min(620px,85%)">
+        {% if banner.subtitle %}
+        <div style="display:inline-block;margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.8);font-weight:400">{{ banner.subtitle }}</span>
+        </div>
+        {% endif %}
+        {% if banner.title %}
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,72px);line-height:1.05;letter-spacing:1px;color:white;font-weight:400;margin:0 0 20px">{{ banner.title }}</h1>
+        {% endif %}
+        {% if banner.content %}
+        <p style="font-family:'Inter',sans-serif;font-size:14px;font-weight:300;color:rgba(255,255,255,0.85);line-height:1.7;margin:0 0 32px;max-width:360px">{{ banner.content }}</p>
+        {% endif %}
+        {% if banner.link %}
+        <a href="{{ banner.link }}" class="btn-refined" style="background:white;color:#1a1a1a;padding:16px 40px;text-decoration:none;display:inline-block;transition:background 0.3s,color 0.3s" onmouseover="this.style.background='#1a1a1a';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='#1a1a1a'">
+          {% if banner.link_text %}{{ banner.link_text }}{% else %}KEŞFET{% endif %}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <button id="prevBtn" style="position:absolute;left:24px;top:50%;transform:translateY(-50%);z-index:20;width:48px;height:48px;background:rgba(255,255,255,0.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1a1a;transition:background 0.3s" onmouseover="this.style.background='white'" onmouseout="this.style.background='rgba(255,255,255,0.9)'"><i class="fas fa-chevron-left"></i></button>
+  <button id="nextBtn" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);z-index:20;width:48px;height:48px;background:rgba(255,255,255,0.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1a1a;transition:background 0.3s" onmouseover="this.style.background='white'" onmouseout="this.style.background='rgba(255,255,255,0.9)'"><i class="fas fa-chevron-right"></i></button>
+  <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:8px;align-items:center">
+    {% for banner in banners %}
+    <button class="dot" data-i="{{ forloop.counter0 }}" style="width:{% if forloop.first %}32px{% else %}8px{% endif %};height:3px;background:{% if forloop.first %}white{% else %}rgba(255,255,255,0.4){% endif %};border:none;cursor:pointer;transition:all 0.4s"></button>
+    {% endfor %}
+  </div>
+</section>
+
+{% else %}
+<section style="position:relative;overflow:hidden;width:100%;aspect-ratio:16/7;max-height:720px">
+  <div class="banner-track" id="bannerTrack" style="width:300%;height:100%;display:flex">
+    <!-- SLIDE 1 -->
+    <div style="width:33.333%;height:100%;flex-shrink:0;position:relative;display:flex;align-items:center;background:linear-gradient(135deg,#f5f0eb 0%,#d4ddd2 100%)">
+      <div style="position:relative;z-index:5;padding:clamp(32px,6vw,80px);max-width:min(600px,85%)">
+        <div style="display:inline-block;margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#888;font-weight:400">YENİ KOLEKSİYON 2025</span>
+        </div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,72px);line-height:1.05;letter-spacing:1px;color:#1a1a1a;font-weight:400;margin:0 0 24px">Zarafet<br/>Her Detayda</h1>
+        <a href="#products" class="btn-refined" style="background:#1a1a1a;color:white;padding:16px 40px;text-decoration:none;display:inline-block;transition:background 0.3s" onmouseover="this.style.background='#c9a96e'" onmouseout="this.style.background='#1a1a1a'">KEŞFET</a>
+      </div>
+    </div>
+    <!-- SLIDE 2 -->
+    <div style="width:33.333%;height:100%;flex-shrink:0;position:relative;display:flex;align-items:center;background:linear-gradient(135deg,#f0e0d6 0%,#f5f0eb 100%)">
+      <div style="position:relative;z-index:5;padding:clamp(32px,6vw,80px);max-width:min(600px,85%)">
+        <div style="display:inline-block;margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#888;font-weight:400">ÖZEL SEÇKİ</span>
+        </div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,72px);line-height:1.05;letter-spacing:1px;color:#1a1a1a;font-weight:400;margin:0 0 24px">Minimalist<br/>Tasarımlar</h1>
+        <a href="#products" class="btn-refined" style="background:#1a1a1a;color:white;padding:16px 40px;text-decoration:none;display:inline-block;transition:background 0.3s" onmouseover="this.style.background='#c9a96e'" onmouseout="this.style.background='#1a1a1a'">İNCELE</a>
+      </div>
+    </div>
+    <!-- SLIDE 3 -->
+    <div style="width:33.333%;height:100%;flex-shrink:0;position:relative;display:flex;align-items:center;background:linear-gradient(135deg,#d4ddd2 0%,#FAFAF8 100%)">
+      <div style="position:relative;z-index:5;padding:clamp(32px,6vw,80px);max-width:min(600px,85%)">
+        <div style="display:inline-block;margin-bottom:20px">
+          <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#888;font-weight:400">%30'A VARAN İNDİRİM</span>
+        </div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,72px);line-height:1.05;letter-spacing:1px;color:#1a1a1a;font-weight:400;margin:0 0 24px">Sezon Sonu<br/>Fırsatları</h1>
+        <a href="#products" class="btn-refined" style="background:#1a1a1a;color:white;padding:16px 40px;text-decoration:none;display:inline-block;transition:background 0.3s" onmouseover="this.style.background='#c9a96e'" onmouseout="this.style.background='#1a1a1a'">ALIŞVERİŞE BAŞLA</a>
+      </div>
+    </div>
+  </div>
+  <button id="prevBtn" style="position:absolute;left:24px;top:50%;transform:translateY(-50%);z-index:20;width:48px;height:48px;background:rgba(255,255,255,0.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1a1a;transition:background 0.3s" onmouseover="this.style.background='white'" onmouseout="this.style.background='rgba(255,255,255,0.9)'"><i class="fas fa-chevron-left"></i></button>
+  <button id="nextBtn" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);z-index:20;width:48px;height:48px;background:rgba(255,255,255,0.9);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1a1a1a;transition:background 0.3s" onmouseover="this.style.background='white'" onmouseout="this.style.background='rgba(255,255,255,0.9)'"><i class="fas fa-chevron-right"></i></button>
+  <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:8px;align-items:center">
+    <button class="dot" data-i="0" style="width:32px;height:3px;background:#1a1a1a;border:none;cursor:pointer;transition:all 0.4s"></button>
+    <button class="dot" data-i="1" style="width:8px;height:3px;background:rgba(0,0,0,0.2);border:none;cursor:pointer;transition:all 0.4s"></button>
+    <button class="dot" data-i="2" style="width:8px;height:3px;background:rgba(0,0,0,0.2);border:none;cursor:pointer;transition:all 0.4s"></button>
+  </div>
+</section>
+{% endif %}
+
+
+
+<!-- ════════════════════════════════
+     PRODUCTS
+════════════════════════════════ -->
+<section id="products" style="background:#FAFAF8;padding:clamp(60px,8vw,100px) 24px">
+  <div style="max-width:1400px;margin:0 auto">
+    
+    <!-- Section Header -->
+    <div style="text-align:center;margin-bottom:56px">
+      <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#c9a96e;font-weight:500;display:block;margin-bottom:16px">YENİ KOLEKSİYON</span>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);color:#1a1a1a;font-weight:400;margin-bottom:20px">Yeni Gelenler</h2>
+      <div class="separator" style="margin:0 auto"></div>
+    </div>
+
+    <!-- Products Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px">
+      
+      {% if products %}
+        {% for product in featured_products %}
+        <div class="elegant-card" style="overflow:hidden;cursor:pointer;position:relative">
+          <a href="/product/{{ product.slug }}/" style="text-decoration:none;color:inherit;display:block">
+            <!-- Product Image -->
+            <div class="img-reveal" style="aspect-ratio:3/4;overflow:hidden;position:relative">
+              {% if product.images.first %}
+              <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover"/>
+              {% else %}
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,#f5f0eb,#d4ddd2);display:flex;align-items:center;justify-content:center">
+                <i class="fas fa-image" style="font-size:32px;color:rgba(0,0,0,0.1)"></i>
+              </div>
+              {% endif %}
+              {% if product.is_featured %}
+              <div style="position:absolute;top:16px;left:16px">
+                <span class="badge-feat" style="padding:6px 12px">SEÇİLMİŞ</span>
+              </div>
+              {% endif %}
+              <div class="quick-add-wrap">
+                <button onclick="addToBasket('{{ product.id }}','{{ product.name }}',{{ product.price }},'{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}');event.preventDefault();event.stopPropagation();" class="btn-refined" style="background:white;color:#1a1a1a;padding:12px 28px;border:none">
+                  SEPETE EKLE
+                </button>
+              </div>
+            </div>
+            <!-- Product Info -->
+            <div style="padding:20px 4px">
+              {% if product.category %}
+              <span style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#c9a96e">{{ product.category.name }}</span>
+              {% endif %}
+              <p style="font-family:'Inter',sans-serif;font-size:14px;font-weight:400;color:#1a1a1a;margin:6px 0 10px;line-height:1.4">{{ product.name }}</p>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:#1a1a1a">₺{{ product.price }}</span>
+                {% if product.old_price %}
+                <span style="font-size:13px;color:#bbb;text-decoration:line-through;font-weight:400">₺{{ product.old_price }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+
+        {% for product in products %}
+        <div class="elegant-card" style="overflow:hidden;cursor:pointer;position:relative">
+          <a href="/product/{{ product.slug }}/" style="text-decoration:none;color:inherit;display:block">
+            <div class="img-reveal" style="aspect-ratio:3/4;overflow:hidden;position:relative">
+              {% if product.images.first %}
+              <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" style="width:100%;height:100%;object-fit:cover"/>
+              {% else %}
+              <div style="width:100%;height:100%;background:linear-gradient(135deg,#f0f0f0,#e8e8e8);display:flex;align-items:center;justify-content:center">
+                <i class="fas fa-image" style="font-size:32px;color:rgba(0,0,0,0.08)"></i>
+              </div>
+              {% endif %}
+              {% if product.is_new %}
+              <div style="position:absolute;top:16px;left:16px"><span class="badge-new" style="padding:6px 12px">YENİ</span></div>
+              {% endif %}
+              {% if product.is_on_sale %}
+              <div style="position:absolute;top:16px;left:16px"><span class="badge-sale" style="padding:6px 12px">İNDİRİM</span></div>
+              {% endif %}
+              <div class="quick-add-wrap">
+                <button onclick="addToBasket('{{ product.id }}','{{ product.name }}',{{ product.price }},'{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}');event.preventDefault();event.stopPropagation();" class="btn-refined" style="background:white;color:#1a1a1a;padding:12px 28px;border:none">
+                  SEPETE EKLE
+                </button>
+              </div>
+            </div>
+            <div style="padding:20px 4px">
+              {% if product.category %}
+              <span style="font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#c9a96e">{{ product.category.name }}</span>
+              {% endif %}
+              <p style="font-family:'Inter',sans-serif;font-size:14px;font-weight:400;color:#1a1a1a;margin:6px 0 10px;line-height:1.4">{{ product.name }}</p>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:#1a1a1a">₺{{ product.price }}</span>
+                {% if product.old_price %}
+                <span style="font-size:13px;color:#bbb;text-decoration:line-through;font-weight:400">₺{{ product.old_price }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+
+      {% else %}
+      <!-- No Products -->
+      <div style="grid-column:1/-1;text-align:center;padding:80px 20px">
+        <div style="display:inline-block;max-width:400px">
+          <div style="width:48px;height:1px;background:#c9a96e;margin:0 auto 32px"></div>
+          <p style="font-family:'Playfair Display',serif;font-size:24px;color:#1a1a1a;margin-bottom:12px;font-weight:400">Henüz Ürün Yok</p>
+          <p style="font-size:13px;font-weight:400;color:#999;line-height:1.6">Çok yakında harika ürünlerle geliyoruz.</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- VIEW ALL -->
+    <div style="text-align:center;margin-top:56px">
+      <a href="#" class="btn-refined" style="color:#1a1a1a;padding:16px 48px;text-decoration:none;border:1px solid #1a1a1a;transition:all 0.3s" onmouseover="this.style.background='#1a1a1a';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#1a1a1a'">TÜMÜNÜ GÖR</a>
+    </div>
+
+    <!-- PAGINATION -->
+    {% if products.has_other_pages %}
+    <div style="margin-top:56px;display:flex;justify-content:center">
+      <div style="display:flex;align-items:center;gap:4px">
+        {% if products.has_previous %}
+        <a href="/?product_page={{ products.previous_page_number }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;text-decoration:none;font-size:14px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'"><i class="fas fa-chevron-left"></i></a>
+        {% endif %}
+        {% for num in products.paginator.page_range %}
+          {% if products.paginator.num_pages <= 5 or num >= products.number|add:"-2" and num <= products.number|add:"2" %}
+            {% if num == products.number %}
+            <span style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#1a1a1a;color:white;font-family:'Inter';font-size:13px;font-weight:500">{{ num }}</span>
+            {% else %}
+            <a href="/?product_page={{ num }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;text-decoration:none;font-family:'Inter';font-size:13px;font-weight:400;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'">{{ num }}</a>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if products.has_next %}
+        <a href="/?product_page={{ products.next_page_number }}" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;text-decoration:none;font-size:14px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='#1a1a1a'"><i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     BLOG POSTS
+════════════════════════════════ -->
+{% if latest_posts %}
+<section style="background:white;padding:clamp(60px,8vw,100px) 24px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:56px">
+      <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#c9a96e;font-weight:500;display:block;margin-bottom:16px">BLOG</span>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);color:#1a1a1a;font-weight:400;margin-bottom:20px">Son Yazılar</h2>
+      <div class="separator" style="margin:0 auto"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:32px">
+      {% for post in latest_posts %}
+      <article class="elegant-card" style="overflow:hidden;cursor:pointer">
+        {% if post.image %}
+        <div class="img-reveal" style="aspect-ratio:16/10;overflow:hidden">
+          <img src="{{ post.image.url }}" alt="{{ post.title }}" style="width:100%;height:100%;object-fit:cover"/>
+        </div>
+        {% endif %}
+        <div style="padding:28px 4px">
+          <span style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:#c9a96e;font-weight:500;display:block;margin-bottom:12px">BLOG</span>
+          <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:#1a1a1a;margin-bottom:12px;line-height:1.3;font-weight:500">{{ post.title }}</h3>
+          {% if post.excerpt %}
+          <p style="font-size:13px;font-weight:300;color:#888;line-height:1.7;margin-bottom:20px">{{ post.excerpt|truncatechars:100 }}</p>
+          {% endif %}
+          <a href="/{{ post.slug }}/" style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:2px;font-weight:500;color:#1a1a1a;text-decoration:none;transition:color 0.3s;border-bottom:1px solid #1a1a1a;padding-bottom:2px" onmouseover="this.style.color='#c9a96e';this.style.borderColor='#c9a96e'" onmouseout="this.style.color='#1a1a1a';this.style.borderColor='#1a1a1a'">DEVAMINI OKU</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ════════════════════════════════
+     NEWSLETTER
+════════════════════════════════ -->
+<section style="background:#f7f4f0;padding:clamp(60px,8vw,100px) 24px">
+  <div style="max-width:520px;margin:0 auto;text-align:center">
+    <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:4px;color:#c9a96e;font-weight:500;display:block;margin-bottom:16px">BÜLTEN</span>
+    <h2 style="font-family:'Playfair Display',serif;font-size:clamp(24px,3.5vw,36px);color:#1a1a1a;font-weight:400;margin-bottom:12px;line-height:1.2">Kampanyaları Kaçırmayın</h2>
+    <p style="font-size:13px;font-weight:300;color:#888;margin-bottom:32px;line-height:1.6">Yeni koleksiyonlar ve özel indirimler için bültenimize abone olun.</p>
+    
+    {% if messages %}
+      {% for message in messages %}
+      <div style="background:#d4ddd2;padding:14px 20px;margin-bottom:20px">
+        <span style="font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:#1a1a1a">{{ message }}</span>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <form action="" method="post" style="display:flex;gap:0;border:1px solid #ddd">
+      {% csrf_token %}
+      <input name="email" type="email" placeholder="E-posta adresiniz..." required style="flex:1;min-width:0;padding:16px 20px;font-family:'Inter',sans-serif;font-size:13px;font-weight:300;border:none;outline:none;background:white;color:#1a1a1a"/>
+      <button type="submit" class="btn-refined" style="background:#1a1a1a;color:white;padding:16px 28px;border:none;white-space:nowrap;transition:background 0.3s" onmouseover="this.style.background='#c9a96e'" onmouseout="this.style.background='#1a1a1a'">ABONE OL</button>
+    </form>
+    <p style="font-size:11px;font-weight:300;color:#bbb;margin-top:16px">Spam göndermiyoruz. İstediğiniz zaman çıkabilirsiniz.</p>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     FOOTER
+════════════════════════════════ -->
+<footer style="background:#1a1a1a;padding:clamp(56px,8vw,80px) 24px 32px">
+  <div style="max-width:1400px;margin:0 auto">
+    <!-- Footer Top Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:48px;margin-bottom:56px">
+      
+      <!-- Brand Column -->
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;letter-spacing:4px;color:white;margin-bottom:20px;font-weight:400">
+          {% if mysettings.0.site_name %}{{ mysettings.0.site_name }}{% else %}TICA FET{% endif %}
+        </div>
+        <div style="width:32px;height:1px;background:#c9a96e;margin-bottom:20px"></div>
+        {% if mysettings.0.contact_email %}
+        <a href="mailto:{{ mysettings.0.contact_email }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-envelope" style="font-size:11px;color:#c9a96e;width:14px"></i> {{ mysettings.0.contact_email }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_phone %}
+        <a href="tel:{{ mysettings.0.contact_phone }}" style="display:flex;align-items:center;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;margin-bottom:10px;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
+          <i class="fas fa-phone" style="font-size:11px;color:#c9a96e;width:14px"></i> {{ mysettings.0.contact_phone }}
+        </a>
+        {% endif %}
+        {% if mysettings.0.contact_address %}
+        <p style="display:flex;align-items:flex-start;gap:10px;font-size:12px;font-weight:300;color:rgba(255,255,255,0.5);margin-bottom:10px">
+          <i class="fas fa-map-marker-alt" style="font-size:11px;color:#c9a96e;margin-top:2px;flex-shrink:0;width:14px"></i> {{ mysettings.0.contact_address }}
+        </p>
+        {% endif %}
+        <!-- Social Icons -->
+        <div style="display:flex;gap:12px;margin-top:24px">
+          {% if mysettings.0.instagram_url %}
+          <a href="{{ mysettings.0.instagram_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-instagram" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.facebook_url %}
+          <a href="{{ mysettings.0.facebook_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-facebook-f" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.twitter_url %}
+          <a href="{{ mysettings.0.twitter_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-twitter" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+          {% if mysettings.0.linkedin_url %}
+          <a href="{{ mysettings.0.linkedin_url }}" target="_blank" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);text-decoration:none;transition:all 0.3s" onmouseover="this.style.borderColor='#c9a96e';this.style.color='#c9a96e'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">
+            <i class="fab fa-linkedin-in" style="font-size:14px"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Shopping Column -->
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:24px;font-weight:500">ALIŞVERİŞ</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if categories %}
+            {% for category in categories %}
+            <li><a href="/products/category/{{ category.slug }}" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ category.name }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Yeni Gelenler</a></li>
+          <li><a href="#" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İndirimler</a></li>
+          <li><a href="#" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Koleksiyonlar</a></li>
+          <li><a href="#" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Hediye Setleri</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- Help Column -->
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:24px;font-weight:500">KURUMSAL</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:12px">
+          {% if pages %}
+            {% for page in pages %}
+            <li><a href="/page/{{ page.slug }}" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ page.title }}</a></li>
+            {% endfor %}
+          {% else %}
+          <li><a href="#" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Sipariş Takip</a></li>
+          <li><a href="/return-policy/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İade & Değişim</a></li>
+          <li><a href="/shipping-policy/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">Kargo Bilgisi</a></li>
+          <li><a href="/contact-info/" style="font-size:13px;font-weight:300;color:rgba(255,255,255,0.5);text-decoration:none" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">İletişim</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <!-- Promo Column -->
+      <div>
+        <h4 style="font-family:'Inter',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.3);margin-bottom:24px;font-weight:500">HİZMETLER</h4>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <i class="fas fa-shipping-fast" style="font-size:16px;color:#c9a96e;margin-top:2px"></i>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);margin-bottom:3px">Ücretsiz Kargo</p>
+              <p style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.35)">1500₺ üzeri siparişlerde</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <i class="fas fa-credit-card" style="font-size:16px;color:#c9a96e;margin-top:2px"></i>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);margin-bottom:3px">Kapıda Ödeme</p>
+              <p style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.35)">Tamamen ücretsiz</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <i class="fas fa-undo" style="font-size:16px;color:#c9a96e;margin-top:2px"></i>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);margin-bottom:3px">14 Gün İade</p>
+              <p style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.35)">Koşulsuz iade garantisi</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">
+      <p style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.25)">
+        {% if mysettings.0.footer_text %}{{ mysettings.0.footer_text }}{% else %}© 2025 Tica Fet. Tüm hakları saklıdır.{% endif %}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:20px">
+        <a href="/privacy-policy/" style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Gizlilik Politikası</a>
+        <a href="/terms-of-service/" style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Kullanım Koşulları</a>
+        <a href="/legal-notice/" style="font-size:11px;font-weight:300;color:rgba(255,255,255,0.25);text-decoration:none;transition:color 0.3s" onmouseover="this.style.color='#c9a96e'" onmouseout="this.style.color='rgba(255,255,255,0.25)'">Çerez Politikası</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════════════════════════
+     RESPONSIVE STYLES
+════════════════════════════════ -->
+<style>
+  @media (min-width: 1024px) {
+    .lg-flex { display: flex !important; }
+    .lg-flex-item { display: flex !important; }
+    .lg-hidden { display: none !important; }
+    #desktopSearchForm { display: flex !important; }
+    button[title="Hesabım"] { display: flex !important; }
+  }
+  @media (max-width: 1023px) {
+    #desktopNav { display: none !important; }
+    #desktopSearchForm { display: none !important; }
+  }
+</style>
+
+<!-- ════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════ -->
+<script>
+/* ── BANNER SLIDER ── */
+const track = document.getElementById('bannerTrack');
+const dots = document.querySelectorAll('.dot');
+const totalSlides = dots.length || 3;
+const slideW = 100 / totalSlides;
+let current = 0, autoPlay;
+
+function goTo(i) {
+  current = ((i % totalSlides) + totalSlides) % totalSlides;
+  track.style.transform = `translateX(-${current * slideW}%)`;
+  dots.forEach((d, idx) => {
+    d.style.width = idx === current ? '32px' : '8px';
+    d.style.background = idx === current ? (document.querySelector('section[style*="aspect-ratio:16/7"]') ? 'white' : '#1a1a1a') : 'rgba(255,255,255,0.4)';
+  });
+}
+function startAuto() { autoPlay = setInterval(() => goTo(current + 1), 5500); }
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+if (prevBtn) prevBtn.addEventListener('click', () => { clearInterval(autoPlay); goTo(current - 1); startAuto(); });
+if (nextBtn) nextBtn.addEventListener('click', () => { clearInterval(autoPlay); goTo(current + 1); startAuto(); });
+dots.forEach(d => d.addEventListener('click', () => { clearInterval(autoPlay); goTo(+d.dataset.i); startAuto(); }));
+startAuto();
+
+/* ── SEARCH ── */
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput   = document.getElementById('searchInput');
+function openSearch() { searchOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; setTimeout(() => searchInput && searchInput.focus(), 80); }
+function closeSearch() { searchOverlay.classList.remove('open'); document.body.style.overflow = ''; if (searchInput) searchInput.value = ''; }
+const searchOpenBtn = document.getElementById('searchOpenBtn');
+if (searchOpenBtn) searchOpenBtn.addEventListener('click', openSearch);
+document.getElementById('searchClose').addEventListener('click', closeSearch);
+searchOverlay.addEventListener('click', e => { if (e.target === searchOverlay) closeSearch(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSearch(); closeSidebar(); } });
+
+/* ── SIDEBAR ── */
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('hamburger').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+sidebarOverlay.addEventListener('click', closeSidebar);
+document.getElementById('sidebarSearchBtn').addEventListener('click', () => { closeSidebar(); setTimeout(openSearch, 200); });
+
+/* ── SIDEBAR ACCORDION ── */
+function toggleSbCat(btn) {
+  const sub = btn.nextElementSibling;
+  const isOpen = sub.classList.contains('open');
+  document.querySelectorAll('.sb-sub-list.open').forEach(s => s.classList.remove('open'));
+  document.querySelectorAll('.sb-cat-btn .fa-chevron-right').forEach(i => i.style.transform = 'rotate(0deg)');
+  if (!isOpen) {
+    sub.classList.add('open');
+    btn.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
+  }
+}
+
+/* ── BASKET ── */
+function addToBasket(productId, productName, productPrice, productImage) {
+  let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const idx = basket.findIndex(item => item.id === productId);
+  if (idx > -1) {
+    basket[idx].quantity += 1;
+    showToast('Miktar güncellendi', '#1a1a1a');
+  } else {
+    basket.push({ id: productId, name: productName, price: productPrice, image: productImage, quantity: 1 });
+    showToast('Sepete eklendi', '#1a1a1a');
+  }
+  localStorage.setItem('basket', JSON.stringify(basket));
+  updateBasketCount();
+}
+
+function updateBasketCount() {
+  const basket = JSON.parse(localStorage.getItem('basket') || '[]');
+  const total = basket.reduce((s, i) => s + i.quantity, 0);
+  document.querySelectorAll('.badge-pulse').forEach(b => b.textContent = total || '0');
+}
+
+function showToast(msg, color) {
+  const el = document.createElement('div');
+  el.className = 'toast-pop';
+  el.style.background = color;
+  el.style.color = 'white';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 2800);
+}
+
+document.addEventListener('DOMContentLoaded', updateBasketCount);
+
+/* ── CATEGORY SCROLL (mobile) ── */
+document.addEventListener("DOMContentLoaded", function () {
+  const slider = document.querySelector(".hide-scroll");
+  if (!slider) return;
+  const items = Array.from(slider.children);
+  items.forEach(item => slider.appendChild(item.cloneNode(true)));
+  let scrollAmount = 0;
+  let autoScroll;
+  function startAutoScroll() {
+    autoScroll = setInterval(() => {
+      const itemWidth = slider.children[0].offsetWidth + 16;
+      scrollAmount += itemWidth;
+      slider.scrollTo({ left: scrollAmount, behavior: "smooth" });
+      if (scrollAmount >= slider.scrollWidth / 2) {
+        setTimeout(() => { slider.scrollLeft = 0; scrollAmount = 0; }, 500);
+      }
+    }, 3500);
+  }
+  slider.addEventListener("scroll", () => { clearInterval(autoScroll); startAutoScroll(); });
+  startAutoScroll();
+});
+</script>
+
+</body>
+</html>
+{% endif %}
